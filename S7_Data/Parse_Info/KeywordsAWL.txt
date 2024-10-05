@@ -1,0 +1,40 @@
+FUNCTION_BLOCK FB 540
+TITLE =Shift Counter
+{ S7_language := '9(7) English (South Africa)  05.11.2023  01:05:35' }
+AUTHOR : 'FFT-EDAG'
+FAMILY : AF
+NAME : 'S7G_V5.1'
+VERSION : 0.1
+BEGIN
+NETWORK
+TITLE =002XZS001 ********** Shift Counter  **********
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 2812
+END_DATA_BLOCK
+
+
+FUNCTION FC 91 : VOID
+//Function description comments here
+{ S7_language := '9(7) Englisch (USA)   13.08.2018  10:40:07' }
+AUTHOR : integra
+FAMILY : SUB
+NAME : TlgVehDa
+VERSION : 1.1
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 122
+TITLE =Access error (system alarm with input/output module)
+{ S7_language := '9(7) Englisch (S�dafrika)  13.08.2018  10:40:07' }
+AUTHOR : DCRa
+FAMILY : BS
+NAME : DP_F
+VERSION : 1.0
+VAR_TEMP
+  OB122_EV_CLASS : BYTE ;	//16#29 Event class 2, entering event state, internal fault event
+END_VAR
+BEGIN
+NETWORK
+END_ORGANIZATION_BLOCK

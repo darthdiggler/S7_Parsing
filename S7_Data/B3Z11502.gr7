@@ -1,0 +1,5131 @@
+FUNCTION_BLOCK FB420
+(*$_COM Station 050QF_001 Sequence
+->Initial Step->Check home position->Select_Direction
+1.From 40 TO 50
+->START OPEN 050TRR001->Wait for HTR-BG11:4->START CLOSE 050TRR001
+2.From HTM01 TO HTM02
+->Move 050HTM001 down->Move QF forward +1 place->Move all HTM up
+3.From 50 TO 60
+->050ST_001_QM1 forward->Move out part->050ST_001_QM1 backward->Move 050HTM002 down
+
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial step*)
+
+DB320.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check home position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB320.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB320.DBX152.1   (N)
+END_STEP
+
+STEP Select_Direction (*$_NUM 3*):
+(*$_COM Process_Decision@Process_Decision*)
+
+SUPERVISION
+ CONDITION := S003.U > DB320.DBD220 AND NOT T003.TT AND NOT T008.TT AND NOT T012.TT 
+END_SUPERVISION
+DB320.DBX152.3   (N)
+END_STEP
+
+STEP START_OPEN_050TRR001 (*$_NUM 4*):
+(*$_COM START OPEN 050TRR001@OPEN 050TRR001*)
+
+DB320.DBX155.1   (N)
+END_STEP
+
+STEP WAIT_PART_IN (*$_NUM 5*):
+(*$_COM Wait for HTR-BG11:4@WAIT FOR PART IN*)
+
+SUPERVISION
+ CONDITION := S005.U > DB320.DBD220 AND NOT T005.TT 
+END_SUPERVISION
+DB320.DBX152.3   (N)
+END_STEP
+
+STEP START_CLOSE_050TRR001 (*$_NUM 6*):
+(*$_COM START CLOSE 050TRR001@CLOSE 050TRR001*)
+
+DB320.DBX155.0   (N)
+END_STEP
+
+STEP Ready_MSG (*$_NUM 7*):
+(*$_COM Ready Message@Step comment*)
+
+DB320.DBX152.2   (N)
+END_STEP
+
+STEP MOVE_050HTM001_DOWN (*$_NUM 8*):
+(*$_COM Move 050HTM001 down@MOVE 050HTM001 DOWN*)
+
+DB320.DBX153.3   (N)
+END_STEP
+
+STEP Move_to_PL2 (*$_NUM 9*):
+(*$_COM Move QF forward +1 place@Move to PL2*)
+
+DB320.DBX154.0   (N)
+END_STEP
+
+STEP Move_HTM_up (*$_NUM 10*):
+(*$_COM Move all HTM up@Move HTM up*)
+
+DB320.DBX153.2   (N)
+DB320.DBX153.4   (N)
+END_STEP
+
+STEP Wait_HTR_Ready (*$_NUM 15*):
+(*$_COM Wait for 060HTR001 ready to take over the part@Wait for 060HTR001 to be ready*)
+
+DB320.DBX155.5   (N)
+END_STEP
+
+STEP START_050ST_001_BG11 (*$_NUM 11*):
+(*$_COM 050ST_001_QM1 forward@move 050ST_001_BG11 fwd*)
+
+DB320.DBX154.6   (N)
+END_STEP
+
+STEP START_PART_OUT (*$_NUM 12*):
+(*$_COM Move out part@move part out*)
+
+DB320.DBX153.7   (N)
+END_STEP
+
+STEP START_050ST_001_BG21 (*$_NUM 13*):
+(*$_COM 050ST_001_QM1 backward@move 050ST_001_BG21 bkw*)
+
+DB320.DBX154.7   (N)
+END_STEP
+
+STEP Move_HTM_down (*$_NUM 14*):
+(*$_COM Move 050HTM002 down@Move_HTM_down*)
+
+DB320.DBX153.5   (N)
+END_STEP
+
+TRANSITION Init (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := ((I4512.3 AND DB1402.DBX148.7 AND DB1518.DBX149.0 AND M595.4 AND ((NOT DB1251.DBX162.5 OR (I4502.6 ))AND ((NOT DB1251.DBX162.7 OR (I4503.0 ))AND NOT DB1251.DBX130.1 ))OR (NOT I4512.3 AND DB1402.DBX148.7 AND I3191.0 AND DB1412.DBX149.7 AND DB1518.DBX149.0 AND DB1407.DBX149.0 AND M595.5 OR (NOT I4512.3 AND DB1407.DBX148.7 AND DB1417.DBX149.7 AND DB323.DBX152.0 AND ((DB203.DBX132.0 OR (DB203.DBX132.1 ))AND (DB204.DBX132.0 AND NOT DB1722.DBX149.7 OR (DB204.DBX132.1 ))))))AND NOT DB1252.DBX161.3 AND NOT DB1251.DBX161.3 AND NOT DB1252.DBX160.7 )
+END_TRANSITION
+
+TRANSITION GRD (*$_NUM 2*)
+  FROM CheckHomePos
+  TO Select_Direction
+CONDITION := (I4512.3 AND DB1402.DBX148.7 AND NOT I3191.0 AND NOT I3191.1 AND NOT I3191.2 OR (NOT I4512.3 AND DB1402.DBX148.7 AND I3191.0 AND DB1412.DBX149.7 AND DB1407.DBX149.0 AND NOT I3151.2 AND NOT I3151.0 AND NOT DB1417.DBX139.2 OR (NOT I4512.3 AND DB1407.DBX148.7 AND DB1417.DBX149.7 )))
+END_TRANSITION
+
+TRANSITION From_50_TO_60 (*$_NUM 12*)
+  FROM Select_Direction
+  TO Wait_HTR_Ready
+CONDITION := NOT I4512.3 AND DB1407.DBX148.7 AND DB1417.DBX149.7 AND DB323.DBX152.0 
+END_TRANSITION
+
+TRANSITION Trans17 (*$_NUM 17*)
+  FROM Wait_HTR_Ready
+  TO START_050ST_001_BG11
+CONDITION := DB1507.DBX138.0 AND DB323.DBX155.3 
+END_TRANSITION
+
+TRANSITION FORWARD_050ST_001 (*$_NUM 13*)
+  FROM START_050ST_001_BG11
+  TO START_PART_OUT
+CONDITION := M6656.0 
+END_TRANSITION
+
+TRANSITION Part_moved_out (*$_NUM 14*)
+  FROM START_PART_OUT
+  TO START_050ST_001_BG21
+CONDITION := NOT DB1417.DBX139.2 AND NOT DB323.DBX155.3 
+END_TRANSITION
+
+TRANSITION BACKWARD_050ST_001 (*$_NUM 15*)
+  FROM START_050ST_001_BG21
+  TO Move_HTM_down
+CONDITION := M6656.1 
+END_TRANSITION
+
+TRANSITION HTM_down (*$_NUM 16*)
+  FROM Move_HTM_down
+  TO Ready_MSG
+CONDITION := DB1407.DBX149.0 
+END_TRANSITION
+
+TRANSITION From_HTM01_TO_HTM02 (*$_NUM 8*)
+  FROM Select_Direction
+  TO MOVE_050HTM001_DOWN
+CONDITION := NOT I4512.3 AND DB1402.DBX148.7 AND I3191.0 AND DB1412.DBX149.7 AND DB1518.DBX149.0 AND DB1407.DBX149.0 AND NOT I3151.2 AND NOT I3151.0 AND NOT DB1417.DBX139.2 
+END_TRANSITION
+
+TRANSITION DOWN_050HTM001 (*$_NUM 9*)
+  FROM MOVE_050HTM001_DOWN
+  TO Move_to_PL2
+CONDITION := DB1402.DBX149.0 AND DB1407.DBX149.0 
+END_TRANSITION
+
+TRANSITION QF_PL2 (*$_NUM 10*)
+  FROM Move_to_PL2
+  TO Move_HTM_up
+CONDITION := I3151.0 AND I608.2 
+END_TRANSITION
+
+TRANSITION HTM_up (*$_NUM 11*)
+  FROM Move_HTM_up
+  TO Ready_MSG
+CONDITION := DB1402.DBX148.7 AND DB1407.DBX148.7 
+END_TRANSITION
+
+TRANSITION From_40_TO_50 (*$_NUM 3*)
+  FROM Select_Direction
+  TO START_OPEN_050TRR001
+CONDITION := I4512.3 AND DB1402.DBX148.7 AND NOT I3191.0 AND NOT I3191.1 AND NOT I3191.2 AND DB1518.DBX149.0 
+END_TRANSITION
+
+TRANSITION OPEN_050TRR001 (*$_NUM 4*)
+  FROM START_OPEN_050TRR001
+  TO WAIT_PART_IN
+CONDITION := DB1442.DBX148.7 
+END_TRANSITION
+
+TRANSITION BELEGT_050HTR001 (*$_NUM 5*)
+  FROM WAIT_PART_IN
+  TO START_CLOSE_050TRR001
+CONDITION := I3191.0 AND I3191.2 AND DB1412.DBX149.7 
+END_TRANSITION
+
+TRANSITION CLOSE_050TRR001 (*$_NUM 6*)
+  FROM START_CLOSE_050TRR001
+  TO Ready_MSG
+CONDITION := (DB1442.DBX149.0 OR (M4.1 ))
+END_TRANSITION
+
+TRANSITION Ready_message (*$_NUM 7*)
+  FROM Ready_MSG
+  TO INI (*$_JUMP*)
+CONDITION := DB320.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK FB423
+(*$_COM Station 060HTR001 Sequence
+->Initial Step->Check home position
+->If Empty 060TRR001 move up,Wait for 060HTR001-BG11:4,060TRR001 move down,Read data from RFID,Start 060XSK004,Check_HZ9_H12_H13,Move elevator down,Wait process finished,Move elevator UP
+->If Full Check FM Move out part
+
+
+
+
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial Step*)
+
+DB323.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check home position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB323.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB323.DBX152.1   (N)
+END_STEP
+
+STEP Chk_a (*$_NUM 3*):
+(*$_COM Check station conditions@Check station conditions*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Door_open_a (*$_NUM 4*):
+(*$_COM Door open @Door open and start GST*)
+
+DB323.DBX153.6   (N)
+END_STEP
+
+STEP Chk_b (*$_NUM 5*):
+(*$_COM Check next process@Check next process*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Ready (*$_NUM 6*):
+(*$_COM Ready to transfer@ready to transfer*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Trasnfer_in (*$_NUM 7*):
+(*$_COM Transfer In@Transfer in*)
+
+DB323.DBX155.3   (N)
+END_STEP
+
+STEP Read_Data_from_RFID (*$_NUM 8*):
+(*$_COM Read data from RFID@Read data from RFID*)
+
+DB323.DBX153.7   (N)
+END_STEP
+
+STEP EmptyStep (*$_NUM 9*):
+(*$_COM Empty Step@Empty*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP TLG_NFM (*$_NUM 10*):
+(*$_COM Send telegram not finished@Send telegram not finished*)
+
+DB323.DBX154.4   (N)
+END_STEP
+
+STEP Check_Scrap (*$_NUM 11*):
+(*$_COM Check Scrap@Check Scrap*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Start_060XSK004 (*$_NUM 12*):
+(*$_COM Start 060XSK004@Start 060XSK004*)
+
+DB323.DBX154.0   (N)
+END_STEP
+
+STEP Wait_Rel_060HTS001 (*$_NUM 13*):
+(*$_COM Wait for release 060HTS001@Wait for release HTS*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Move_down (*$_NUM 14*):
+(*$_COM Move elevator down@Move elevator down*)
+
+DB323.DBX153.4   (N)
+END_STEP
+
+STEP EmptyStep2 (*$_NUM 15*):
+(*$_COM Empty Step@Empty *)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Release1_060XSK004 (*$_NUM 16*):
+(*$_COM Release 1 060XSK004@Release 1 060XSK004*)
+
+DB323.DBX154.1   (N)
+END_STEP
+
+STEP Wait_release_060HTS001 (*$_NUM 17*):
+(*$_COM Wait for release 060HTS001@Wait for release HTS*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Move_up (*$_NUM 18*):
+(*$_COM Move elevator up@Move elevator up*)
+
+DB323.DBX153.3   (N)
+END_STEP
+
+STEP Wait_process_finish (*$_NUM 19*):
+(*$_COM Wait process finished@Wait process finished*)
+
+DB323.DBX154.2   (N)
+DB323.DBX155.5   (N)
+DB323.DBX154.3   (N)
+END_STEP
+
+STEP StopCycleT (*$_NUM 20*):
+(*$_COM Stop Cycle Timer@stop cycle timer*)
+
+DB323.DBX156.2   (N)
+END_STEP
+
+STEP Empty_c (*$_NUM 21*):
+(*$_COM Empty Step@Empty Step*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Ready_mess (*$_NUM 22*):
+(*$_COM Ready message@Ready message*)
+
+DB323.DBX152.2   (N)
+END_STEP
+
+STEP Close (*$_NUM 29*):
+(*$_COM Close 060TRR001@Close 060TRR001*)
+
+DB323.DBX153.5   (N)
+END_STEP
+
+STEP EmptyStep1 (*$_NUM 30*):
+(*$_COM Empty Step@Empty *)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Check_FM (*$_NUM 25*):
+(*$_COM Check FM@Check FM*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Waiting (*$_NUM 26*):
+(*$_COM Waiting to transfer@Waiting to transfer*)
+
+DB323.DBX155.2   (N)
+END_STEP
+
+STEP Move_out_part (*$_NUM 27*):
+(*$_COM Move out part@Move out part*)
+
+DB323.DBX153.0   (N)
+END_STEP
+
+STEP Empty_d (*$_NUM 28*):
+(*$_COM Empty Step@Empty Step*)
+
+DB323.DBX152.3   (N)
+END_STEP
+
+STEP Waiting_1 (*$_NUM 23*):
+(*$_COM Waiting to transfer@Waiting to transfer*)
+
+DB323.DBX155.2   (N)
+END_STEP
+
+STEP Move_out_part_1 (*$_NUM 24*):
+(*$_COM Move out part@Move out part*)
+
+DB323.DBX153.0   (N)
+END_STEP
+
+TRANSITION Start_Condition (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := ((NOT DB109.DBX130.0 AND ((DB320.DBX155.5 OR (DB1253.DBX164.7 ))AND DB202.DBX132.0 OR (M320.0 AND DB202.DBX132.0 OR (DB320.DBX155.5 AND DB202.DBX132.1 )))OR (DB109.DBX130.0 AND (((DB320.DBX155.5 OR (DB1253.DBX164.7 OR (M320.0 )))AND DB202.DBX132.0 OR (DB320.DBX155.5 AND DB202.DBX132.1 ))AND ((DB203.DBX132.0 OR (DB203.DBX132.1 ))AND (DB204.DBX132.0 OR (DB204.DBX132.1 ))))))AND DB324.DBX152.0 AND NOT DB1253.DBX161.3 AND NOT DB1251.DBX161.3 AND NOT DB1253.DBX160.7 )
+END_TRANSITION
+
+TRANSITION GRD (*$_NUM 2*)
+  FROM CheckHomePos
+  TO Chk_a
+CONDITION := DB1460.DBX132.1 AND DB1483.DBX132.1 AND DB1521.DBX132.1 
+END_TRANSITION
+
+TRANSITION Way2_a (*$_NUM 23*)
+  FROM Chk_a
+  TO Chk_b
+CONDITION := (NOT DB109.DBX130.0 AND NOT DB320.DBX155.5 OR (DB109.DBX130.0 AND NOT DB320.DBX155.5 AND M320.0 ))
+END_TRANSITION
+
+TRANSITION Way1_a (*$_NUM 3*)
+  FROM Chk_a
+  TO Door_open_a
+CONDITION := DB320.DBX155.5 
+END_TRANSITION
+
+TRANSITION Door_opened_a (*$_NUM 4*)
+  FROM Door_open_a
+  TO Chk_b
+CONDITION := DB1518.DBX148.7 
+END_TRANSITION
+
+TRANSITION Way_b (*$_NUM 24*)
+  FROM Chk_b
+  TO Waiting_1
+CONDITION := (NOT DB109.DBX130.0 AND NOT DB320.DBX155.5 AND DB202.DBX130.2 OR (DB109.DBX130.0 AND NOT DB320.DBX155.5 AND M320.0 AND DB202.DBX130.2 ))
+END_TRANSITION
+
+TRANSITION Trans30_1 (*$_NUM 25*)
+  FROM Waiting_1
+  TO Move_out_part_1
+CONDITION := DB1586.DBX138.0 AND DB327.DBX154.6 
+END_TRANSITION
+
+TRANSITION Part_moved_out_1 (*$_NUM 26*)
+  FROM Move_out_part_1
+  TO Ready_mess
+CONDITION := NOT DB327.DBX154.6 AND NOT DB1507.DBX139.2 
+END_TRANSITION
+
+TRANSITION way_a (*$_NUM 5*)
+  FROM Chk_b
+  TO (Ready, Check_FM) :
+CONDITION := DB320.DBX155.5 
+END_TRANSITION
+
+TRANSITION Not_FM (*$_NUM 32*)
+  FROM Check_FM
+  TO Empty_d
+CONDITION := NOT DB202.DBX130.2 
+END_TRANSITION
+
+TRANSITION FM (*$_NUM 27*)
+  FROM Check_FM
+  TO Waiting
+CONDITION := DB202.DBX130.2 
+END_TRANSITION
+
+TRANSITION Trans30 (*$_NUM 28*)
+  FROM Waiting
+  TO Move_out_part
+CONDITION := DB1586.DBX138.0 AND DB327.DBX154.6 
+END_TRANSITION
+
+TRANSITION Part_moved_out (*$_NUM 29*)
+  FROM Move_out_part
+  TO Empty_d
+CONDITION := NOT DB327.DBX154.6 AND NOT DB1507.DBX139.2 
+END_TRANSITION
+
+TRANSITION Trans31 (*$_NUM 6*)
+  FROM Ready
+  TO Trasnfer_in
+CONDITION := NOT I2991.2 
+END_TRANSITION
+
+TRANSITION Transfered_in (*$_NUM 7*)
+  FROM Trasnfer_in
+  TO (Read_Data_from_RFID, Close) :
+CONDITION := I2991.0 AND I2991.1 AND DB1507.DBX149.7 
+END_TRANSITION
+
+TRANSITION DoorClosed (*$_NUM 30*)
+  FROM Close
+  TO EmptyStep1
+CONDITION := DB1518.DBX149.0 
+END_TRANSITION
+
+TRANSITION Data_ok (*$_NUM 8*)
+  FROM Read_Data_from_RFID
+  TO EmptyStep
+CONDITION := DB1534.DBX149.1 
+END_TRANSITION
+
+TRANSITION True1 (*$_NUM 9*)
+  FROM EmptyStep
+  TO TLG_NFM
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Sended_a (*$_NUM 10*)
+  FROM TLG_NFM
+  TO Check_Scrap
+CONDITION := DB323.DBX154.4 
+END_TRANSITION
+
+TRANSITION Scrap_on (*$_NUM 31*)
+  FROM Check_Scrap
+  TO Wait_process_finish (*$_JUMP*)
+CONDITION := DB202.DBX132.3 
+END_TRANSITION
+
+TRANSITION Scrap_off (*$_NUM 11*)
+  FROM Check_Scrap
+  TO Start_060XSK004
+CONDITION := NOT DB202.DBX132.3 
+END_TRANSITION
+
+TRANSITION started_060XSK004 (*$_NUM 12*)
+  FROM Start_060XSK004
+  TO Wait_Rel_060HTS001
+CONDITION := NOT DB324.DBX152.0 
+END_TRANSITION
+
+TRANSITION Release_060HTS001 (*$_NUM 13*)
+  FROM Wait_Rel_060HTS001
+  TO Move_down
+CONDITION := DB324.DBX164.5 
+END_TRANSITION
+
+TRANSITION Elevator_down (*$_NUM 14*)
+  FROM Move_down
+  TO EmptyStep2
+CONDITION := DB1512.DBX133.2 
+END_TRANSITION
+
+TRANSITION True2 (*$_NUM 15*)
+  FROM ( EmptyStep2, EmptyStep1) 
+  TO Release1_060XSK004
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Rel_060XSK004 (*$_NUM 16*)
+  FROM Release1_060XSK004
+  TO Wait_release_060HTS001
+CONDITION := NOT DB324.DBX164.5 
+END_TRANSITION
+
+TRANSITION Wait_for_060hts001 (*$_NUM 17*)
+  FROM Wait_release_060HTS001
+  TO Move_up
+CONDITION := DB324.DBX164.6 
+END_TRANSITION
+
+TRANSITION Elevator_up (*$_NUM 18*)
+  FROM Move_up
+  TO Wait_process_finish
+CONDITION := DB1512.DBX133.1 
+END_TRANSITION
+
+TRANSITION finish_process (*$_NUM 19*)
+  FROM Wait_process_finish
+  TO StopCycleT
+CONDITION := DB324.DBX152.0 
+END_TRANSITION
+
+TRANSITION Eins_c (*$_NUM 20*)
+  FROM StopCycleT
+  TO Empty_c
+CONDITION := M1253.0 
+END_TRANSITION
+
+TRANSITION Eins_b (*$_NUM 21*)
+  FROM ( Empty_c, Empty_d) 
+  TO Ready_mess
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Ready_message (*$_NUM 22*)
+  FROM Ready_mess
+  TO INI (*$_JUMP*)
+CONDITION := DB323.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK FB424
+(*$_COM 060VR_101/060GST101/102 Sequence
+->Initial Step->Check Station Home Position->Stop Before Process->Templates Check(must be wired)->Check A2/A3/A4 - Base Clamps,A2 - 060VR_101 Base Clamp - QM2 Forward,A3 - 060VR_101 Base Clamp -QM5 Forward->Release 060XSK003 - HTS->1.Check A2/A3/A4 - Body Clamps,A2 - VR_101 Body Clamps -QM3,QM4 Forward ,A3/A4 - VR_101 Body Clamps -QM3QM6QM8 Forward2.GST101 - Front Left Side Clamps -QM2QM3QM4 Forward;3.GST102 - Front Right Side Clamps -QM2QM3QM4  Forward->GST101 - Production Loads Parts,GST102 - Production Loads Parts->060GST101 Check Type,A3 5T - GST101 Front Clamps -QM5QM6QM8 Forward,A3 5T - GST101 Rear Left Slide -QM10QM13QM14QM17QM18 Forward;A2 5T - GST101 Front Clamps -QM5QM6QM8 Forward,A2 5T - GST101 Rear Left Slide -QM9QM11QM12QM15QM16 Forward;A4 4T - GST101 Front Clamps -QM5QM6QM8 Forward->060GST102 Check Type,A3 5T - GST102 Front Clamps -QM5QM7 Forward,A3 5T - GST102 Rear Left Slide -QM9QM12QM13QM16QM17 Forward;A2 5T - GST102 Front Clamps -QM5QM7 Forward,A2 5T - GST102 Rear Left Slide -QM8QM10QM11QM14QM15 Forward;A4 4T - GST102 Front Clamps -QM5QM7 Forward->GST101 - Production Enters To Weld,GST102 - Production Enters To Weld->Open all clamps
+
+
+
+
+
+
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial Step*)
+
+DB324.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check Station Home Position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB324.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB324.DBX152.1   (N)
+END_STEP
+
+STEP Check_HVP (*$_NUM 3*):
+(*$_COM Stop Before Process@Stop Before Process*)
+
+DB324.DBX152.4   (N)
+END_STEP
+
+STEP Template_Check (*$_NUM 4*):
+(*$_COM Templates Check(must be wired)@Templates Check*)
+
+DB324.DBX165.0   (N)
+END_STEP
+
+STEP Type_Check (*$_NUM 5*):
+(*$_COM Check A2/A3/A4 - Base Clamps@Check A2/A3/A4*)
+
+SUPERVISION
+ CONDITION := S005.U > DB324.DBD220 AND NOT T005.TT AND NOT T034.TT AND NOT T036.TT 
+END_SUPERVISION
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP For_060VR_101_QM2_11 (*$_NUM 6*):
+(*$_COM A2 - 060VR_101 Base Clamp - QM2 Forward@060VR_101_QM2 forward*)
+
+DB324.DBX153.2   (N)
+END_STEP
+
+STEP Check_Type (*$_NUM 107*):
+(*$_COM Step comment*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST101_QM20_21_22_a (*$_NUM 108*):
+(*$_COM A2/A3/A4 - GST101 Front Clamps Backward@A2/A3/A4 - GST101 Front Clamps Backward*)
+
+DB324.DBX169.0   (N)
+DB324.DBX169.3   (N)
+DB324.DBX169.4   (N)
+END_STEP
+
+STEP Empty_16 (*$_NUM 109*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP Release (*$_NUM 7*):
+(*$_COM Release 060XSK003 - HTS@Release 1 060XSK003*)
+
+DB324.DBX164.5   (N)
+END_STEP
+
+STEP Check_Body_Pos (*$_NUM 8*):
+(*$_COM Check Body Position@Check part control*)
+
+SUPERVISION
+ CONDITION := S008.U > DB324.DBD220 AND NOT T008.TT 
+END_SUPERVISION
+DB324.DBX153.1   (S)
+END_STEP
+
+STEP Check_Type_2 (*$_NUM 9*):
+(*$_COM Check A2/A3/A4 - Body Clamps@Check A2/A3/A4*)
+
+SUPERVISION
+ CONDITION := S009.U > DB324.DBD220 AND NOT T009.TT AND NOT T039.TT 
+END_SUPERVISION
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP For_VR_101_QM3_4_11 (*$_NUM 10*):
+(*$_COM A2 - VR_101 Body Clamps - Forward@060VR_101_QM3/4 forward*)
+
+DB324.DBX153.4   (N)
+DB324.DBX153.6   (N)
+END_STEP
+
+STEP Empty (*$_NUM 11*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP Rel_Worker_in_GST101 (*$_NUM 12*):
+(*$_COM GST101 - Production Loads Parts@Check part control an 060GST101_QM8 forward*)
+
+DB324.DBX164.7   (N)
+END_STEP
+
+STEP Safety_Reset_a (*$_NUM 13*):
+(*$_COM Safety Area Reset@Wait reset Safety Area*)
+
+DB324.DBX164.7   (N)
+END_STEP
+
+STEP Part_Check_GST101 (*$_NUM 14*):
+(*$_COM GST101 - Check Part Control@Check Part Control on GST101*)
+
+DB324.DBX152.6   (N)
+DB324.DBX164.7   (N)
+DB324.DBX165.2   (N)
+END_STEP
+
+STEP Empty_7 (*$_NUM 15*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP Type_Check_3 (*$_NUM 16*):
+(*$_COM 060GST101 Check Type@060GST101_QM19 forward*)
+
+SUPERVISION
+ CONDITION := S016.U > DB324.DBD220 AND NOT T016.TT AND NOT T047.TT AND NOT T050.TT 
+END_SUPERVISION
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST101_QM5_6_8_11_a (*$_NUM 17*):
+(*$_COM A3 5T - GST101 Front Clamps - Forward@A3 5T - GST101 Front Clamps - Forward*)
+
+DB324.DBX155.6   (N)
+DB324.DBX156.0   (N)
+DB324.DBX156.4   (N)
+END_STEP
+
+STEP GST101_QM10_18_11 (*$_NUM 18*):
+(*$_COM A3 5T - GST101 Rear Left Slide - Forward@060GST101_QM6/16/18 type variant forward*)
+
+DB324.DBX157.0   (N)
+DB324.DBX157.6   (N)
+DB324.DBX158.0   (N)
+DB324.DBX158.6   (N)
+DB324.DBX159.0   (N)
+END_STEP
+
+STEP Empty_9 (*$_NUM 19*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP Rel_Worker_In_a (*$_NUM 20*):
+(*$_COM GST101 - Production Enters To Weld@GST101 - Production Enters To Weld*)
+
+DB324.DBX164.7   (N)
+END_STEP
+
+STEP Template_Check_1 (*$_NUM 21*):
+(*$_COM Check If GST101 template set was used@Step comment*)
+
+DB324.DBX167.6   (N)
+DB324.DBX164.7   (N)
+END_STEP
+
+STEP GST101_Template_Check (*$_NUM 22*):
+(*$_COM Templates Check@Templates Check*)
+
+SUPERVISION
+ CONDITION := S022.U > DB324.DBD220 AND NOT T022.TT 
+END_SUPERVISION
+DB324.DBX165.0   (N)
+DB324.DBX164.7   (N)
+END_STEP
+
+STEP Safety_Reset_c (*$_NUM 23*):
+(*$_COM Wait For Safety Area Reset@Wait reset Safety Area*)
+
+DB324.DBX164.7   (N)
+DB324.DBX165.6   (N)
+END_STEP
+
+STEP Empty_11 (*$_NUM 24*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP Fm1 (*$_NUM 25*):
+(*$_COM FM1 @Step comment*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP Check_type_a (*$_NUM 26*):
+(*$_COM Check A2/A3/A4@Check A2/A3/A4*)
+
+SUPERVISION
+ CONDITION := S026.U > DB324.DBD220 AND NOT T026.TT AND NOT T066.TT 
+END_SUPERVISION
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP VR101_QM3_4_21_a (*$_NUM 27*):
+(*$_COM A2 - VR_101 Body Clamps - Backward@060VR_101_QM3/4 backward*)
+
+DB324.DBX153.5   (N)
+DB324.DBX153.7   (N)
+END_STEP
+
+STEP Empty_3 (*$_NUM 28*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP SAP_Select (*$_NUM 29*):
+(*$_COM Check Stop after process selected@Check Stop after process selected*)
+
+DB324.DBX152.5   (N)
+END_STEP
+
+STEP Release_1_060HTS001 (*$_NUM 30*):
+(*$_COM Release 060XSK003 - HTS@Release 2 060XSK003*)
+
+DB324.DBX164.6   (N)
+DB324.DBX153.1   (R)
+END_STEP
+
+STEP Part_Check_Free (*$_NUM 31*):
+(*$_COM Check Part Control@Check part control*)
+
+DB324.DBX153.0   (N)
+DB324.DBX165.0   (N)
+END_STEP
+
+STEP VR101_QM2_5_21_a (*$_NUM 32*):
+(*$_COM VR_101 Base Clamps - Backward@060VR_101_QM2/5 backward*)
+
+DB324.DBX153.3   (N)
+DB324.DBX154.1   (N)
+END_STEP
+
+STEP Ready_mess (*$_NUM 33*):
+(*$_COM Ready message@Ready message*)
+
+DB324.DBX152.2   (N)
+END_STEP
+
+STEP VR101_QM3_6_8_21_a (*$_NUM 68*):
+(*$_COM A3/A4 - VR_101 Body Clamps - Backward@060VR_101_QM3/6/8 backward*)
+
+DB324.DBX153.5   (N)
+DB324.DBX154.3   (N)
+DB324.DBX154.5   (N)
+END_STEP
+
+STEP Check_type_b (*$_NUM 56*):
+(*$_COM GST101 - Check A2 or A3/A4@060GST101_QM6-8/15-19 backward*)
+
+SUPERVISION
+ CONDITION := S056.U > DB324.DBD220 AND NOT T056.TT AND NOT T073.TT 
+END_SUPERVISION
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST101_QM5_8_21_a (*$_NUM 57*):
+(*$_COM A2 - GST101 Front Left Clamps - Backward@060GST101_QM6-8/15-19 backward*)
+
+DB324.DBX155.7   (N)
+DB324.DBX156.1   (N)
+DB324.DBX156.3   (N)
+DB324.DBX156.5   (N)
+END_STEP
+
+STEP GST101_QM2_4_21_a (*$_NUM 58*):
+(*$_COM A2 - GST101 Front Left Slide - Backward@A2 - GST101 Front Left Slide - Backward*)
+
+DB324.DBX155.1   (N)
+DB324.DBX155.3   (N)
+DB324.DBX155.5   (N)
+END_STEP
+
+STEP GST101_QM15_16_21_a (*$_NUM 59*):
+(*$_COM A2 - GST101 Rear Left Clamps - Backward@060GST101_QM3/12/14 backward*)
+
+DB324.DBX158.3   (N)
+DB324.DBX158.5   (N)
+END_STEP
+
+STEP GST101_QM9_12_21_a (*$_NUM 60*):
+(*$_COM A2 - GST101 Rear Left Slide - Backward@A2 - GST101 Rear Left Slide - Backward*)
+
+DB324.DBX156.7   (N)
+DB324.DBX157.3   (N)
+DB324.DBX157.5   (N)
+END_STEP
+
+STEP Empty_4 (*$_NUM 61*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST101_QM5_8_21_b (*$_NUM 72*):
+(*$_COM A3/A4 - GST101 Front Left Clamps - Backward@060GST101_QM6-8/15-19 backward*)
+
+DB324.DBX155.7   (N)
+DB324.DBX156.1   (N)
+DB324.DBX156.3   (N)
+DB324.DBX156.5   (N)
+END_STEP
+
+STEP GST101_QM2_4_21_b (*$_NUM 73*):
+(*$_COM A3/A4 - GST101 Front Left Slide - Backward@A3/A4 - GST101 Front Left Slide - Backward*)
+
+DB324.DBX155.1   (N)
+DB324.DBX155.3   (N)
+DB324.DBX155.5   (N)
+END_STEP
+
+STEP GST101_QM17_18_21_a (*$_NUM 74*):
+(*$_COM A3/A4 - GST101 Rear Left Clamps - Backward@060GST101_QM2/9/10 backward*)
+
+DB324.DBX158.7   (N)
+DB324.DBX159.1   (N)
+END_STEP
+
+STEP GST101_QM10_14_21_a (*$_NUM 75*):
+(*$_COM A3/A4 - GST101 Rear Left Slide - Backward@A3/A4 - GST101 Rear Left Slide - Backward*)
+
+DB324.DBX157.1   (N)
+DB324.DBX157.7   (N)
+DB324.DBX158.1   (N)
+END_STEP
+
+STEP Check_type_c (*$_NUM 62*):
+(*$_COM GST102 - Check A2 or A3/A4@060GST102_QM5 backward*)
+
+SUPERVISION
+ CONDITION := S062.U > DB324.DBD220 AND NOT T061.TT AND NOT T078.TT 
+END_SUPERVISION
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST102_QM5_7_21_a (*$_NUM 63*):
+(*$_COM A2 - GST102 Front Right Clamps - Backward@060GST102_QM6-7/14-18 backward*)
+
+DB324.DBX160.7   (N)
+DB324.DBX161.3   (N)
+END_STEP
+
+STEP GST102_QM2_4_21_a (*$_NUM 64*):
+(*$_COM A2 - GST102 Front Right Slide - Backward@A2 - GST102 Front Right Slide - Backward*)
+
+DB324.DBX160.1   (N)
+DB324.DBX160.3   (N)
+DB324.DBX160.5   (N)
+END_STEP
+
+STEP GST102_QM14_15_21_a (*$_NUM 65*):
+(*$_COM A2 - GST102 Rear Right Clamps - Backward@060GST102_QM3/11/13 backward*)
+
+DB324.DBX163.1   (N)
+DB324.DBX163.3   (N)
+END_STEP
+
+STEP GST102_QM8_11_21_a (*$_NUM 66*):
+(*$_COM A2 - GST102 Rear Right Slide - Backward@A2 - GST102 Rear Right Slide - Backward*)
+
+DB324.DBX161.5   (N)
+DB324.DBX162.1   (N)
+DB324.DBX162.3   (N)
+END_STEP
+
+STEP Empty_13 (*$_NUM 67*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST102_QM5_7_21_b (*$_NUM 76*):
+(*$_COM A3/A4 - GST102 Front Right Clamps - Backward@060GST102_QM6-7/14-18 backward*)
+
+DB324.DBX160.7   (N)
+DB324.DBX161.3   (N)
+END_STEP
+
+STEP GST102_QM2_4_21_b (*$_NUM 77*):
+(*$_COM A3/A4 - GST102 Front Right Slide - Backward@A3/A4 - GST102 Front Right Slide - Backward*)
+
+DB324.DBX160.1   (N)
+DB324.DBX160.3   (N)
+DB324.DBX160.5   (N)
+END_STEP
+
+STEP GST102_QM16_17_21_a (*$_NUM 78*):
+(*$_COM A3/A4 - GST102 Rear Right Clamps - Backward@060GST102_QM3/11/13 backward*)
+
+DB324.DBX163.5   (N)
+DB324.DBX163.7   (N)
+END_STEP
+
+STEP GST102_QM9_13_21_a (*$_NUM 79*):
+(*$_COM A3/A4 - GST102 Rear Right Slide - Backward@A3/A4 - GST102 Rear Right Slide - Backward*)
+
+DB324.DBX161.7   (N)
+DB324.DBX162.5   (N)
+DB324.DBX162.7   (N)
+END_STEP
+
+STEP Rel_Worker_In_b (*$_NUM 51*):
+(*$_COM GST102 - Production Enters To Weld@GST102 - Production Enters To Weld*)
+
+DB324.DBX165.1   (N)
+END_STEP
+
+STEP Template_Check_2 (*$_NUM 52*):
+(*$_COM Check if GST102 template set was used @Step comment*)
+
+DB324.DBX167.7   (N)
+DB324.DBX165.1   (N)
+END_STEP
+
+STEP GST102_Template_Check (*$_NUM 53*):
+(*$_COM Templates Check(must be wired)@Templates Check*)
+
+SUPERVISION
+ CONDITION := S053.U > DB324.DBD220 AND NOT T054.TT 
+END_SUPERVISION
+DB324.DBX165.1   (N)
+DB324.DBX165.3   (N)
+END_STEP
+
+STEP Safety_Reset_d (*$_NUM 54*):
+(*$_COM Wait For Safety Area Reset@Wait reset Safety Area*)
+
+DB324.DBX165.1   (N)
+DB324.DBX166.6   (N)
+END_STEP
+
+STEP Empty_12 (*$_NUM 55*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST101_QM5_6_8_11_b (*$_NUM 48*):
+(*$_COM A2 5T - GST101 Front Clamps - Forward@A2 5T - GST101 Front Clamps - Forward*)
+
+DB324.DBX155.6   (N)
+DB324.DBX156.0   (N)
+DB324.DBX156.4   (N)
+END_STEP
+
+STEP GST101_QM9_16_11 (*$_NUM 49*):
+(*$_COM A2 5T - GST101 Rear Left Slide - Forward@A2 5T - GST101 Rear Left Slide - Forward*)
+
+DB324.DBX156.6   (N)
+DB324.DBX157.2   (N)
+DB324.DBX157.4   (N)
+DB324.DBX158.2   (N)
+DB324.DBX158.4   (N)
+END_STEP
+
+STEP GST101_QM5_6_8_11_c (*$_NUM 50*):
+(*$_COM A2/A3/A4 4T - GST101 Front Clamps - Forward@A2/A3/A4 4T - GST101 Front Clamps - Forward*)
+
+DB324.DBX155.6   (N)
+DB324.DBX156.0   (N)
+DB324.DBX156.4   (N)
+END_STEP
+
+STEP Type_Check_4 (*$_NUM 44*):
+(*$_COM 060GST102 Check Type@060GST102_QM18 forward*)
+
+SUPERVISION
+ CONDITION := S044.U > DB324.DBD220 AND NOT T044.TT AND NOT T068.TT AND NOT T071.TT 
+END_SUPERVISION
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST102_QM5_7_11_a (*$_NUM 45*):
+(*$_COM A3 5T - GST102 Front Clamps - Forward@060GST102_QM5/16/18 type variant forward*)
+
+DB324.DBX160.6   (N)
+DB324.DBX161.2   (N)
+END_STEP
+
+STEP GST102_QM9_17_a (*$_NUM 46*):
+(*$_COM A3 5T - GST102 Rear Right Slide - Forward@060GST102_QM4/10/12 type variant forward*)
+
+DB324.DBX161.6   (N)
+DB324.DBX162.4   (N)
+DB324.DBX162.6   (N)
+DB324.DBX163.4   (N)
+DB324.DBX163.6   (N)
+END_STEP
+
+STEP Empty_10 (*$_NUM 47*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST102_QM5_7_11_b (*$_NUM 69*):
+(*$_COM A2 5T - GST102 Front Clamps - Forward@A2 5T - GST102 Front Clamps - Forward*)
+
+DB324.DBX160.6   (N)
+DB324.DBX161.2   (N)
+END_STEP
+
+STEP GST102_QM8_15_a (*$_NUM 70*):
+(*$_COM A2 5T - GST102 Rear Right Slide - Forward@A2 5T - GST102 Rear Right Slide - Forward*)
+
+DB324.DBX161.4   (N)
+DB324.DBX162.0   (N)
+DB324.DBX162.2   (N)
+DB324.DBX163.0   (N)
+DB324.DBX163.2   (N)
+END_STEP
+
+STEP GST102_QM5_7_11_c (*$_NUM 71*):
+(*$_COM A2/A3/A4 - GST102 Front Clamps - Forward@A2/A3/A4 - GST102 Front Clamps - Forward*)
+
+DB324.DBX160.6   (N)
+DB324.DBX161.2   (N)
+END_STEP
+
+STEP Rel_Worker_in_GST102 (*$_NUM 40*):
+(*$_COM GST102 - Production Loads Parts@Check part control an 060GST102_QM7 forward*)
+
+DB324.DBX165.1   (N)
+END_STEP
+
+STEP Safety_Reset_b (*$_NUM 41*):
+(*$_COM Safety Area Reset@Wait reset Safety Area*)
+
+DB324.DBX165.1   (N)
+END_STEP
+
+STEP Part_Check_GST102 (*$_NUM 42*):
+(*$_COM GST102 - Check Part Control@GST102 - Check Part Control*)
+
+DB324.DBX152.7   (N)
+DB324.DBX165.1   (N)
+DB324.DBX165.5   (N)
+END_STEP
+
+STEP Empty_8 (*$_NUM 43*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP For_VR_101_QM3_6_8_11 (*$_NUM 39*):
+(*$_COM A3/A4 - VR_101 Body Clamps - Forward@060VR_101_QM3/6/8 forward*)
+
+DB324.DBX153.4   (N)
+DB324.DBX154.2   (N)
+DB324.DBX154.4   (N)
+END_STEP
+
+STEP For_GST101_QM2_3_4_11 (*$_NUM 35*):
+(*$_COM GST101 - Front Left Side Clamps - Forward@060GST101_QM5/7/15/17 type variant forward*)
+
+DB324.DBX155.4   (N)
+DB324.DBX155.0   (N)
+DB324.DBX155.2   (N)
+END_STEP
+
+STEP Empty_1 (*$_NUM 36*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP For_GST102_QM2_3_4_11 (*$_NUM 37*):
+(*$_COM GST102 - Front Right Side Clamps - Forward@060GST102_QM6/14/16 type variant forward*)
+
+DB324.DBX160.4   (N)
+DB324.DBX160.0   (N)
+DB324.DBX160.2   (N)
+END_STEP
+
+STEP Empty_2 (*$_NUM 38*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST102_QM20_21_22_a (*$_NUM 111*):
+(*$_COM A2/A3/A4 - GST102 Front Clamps - Backward@A2/A3/A4 - GST102 Front Clamps Backward*)
+
+DB324.DBX171.0   (N)
+DB324.DBX171.3   (N)
+DB324.DBX171.4   (N)
+END_STEP
+
+STEP Empty_17 (*$_NUM 112*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST101_QM20_21_22_b (*$_NUM 121*):
+(*$_COM A2/A3 eSprinter - GST101 Front Clamps - Forward@A2/A3 eSprinter - GST101 Front Clamps Forward*)
+
+DB324.DBX169.1   (N)
+DB324.DBX169.2   (N)
+DB324.DBX169.5   (N)
+END_STEP
+
+STEP Empty_18 (*$_NUM 122*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP GST102_QM20_21_22_b (*$_NUM 131*):
+(*$_COM A2/A3 eSprinter - GST102 Front Clamps - Forward@A2/A3 eSprinter - GST102 Front Clamps Forward*)
+
+DB324.DBX171.1   (N)
+DB324.DBX171.2   (N)
+DB324.DBX171.5   (N)
+END_STEP
+
+STEP Empty_19 (*$_NUM 132*):
+(*$_COM Empty Step@Empty Step*)
+
+DB324.DBX152.3   (N)
+END_STEP
+
+STEP For_060VR_101_QM5_11 (*$_NUM 34*):
+(*$_COM A3 - 060VR_101 Base Clamp -QM5 Forward@060VR_101_QM5 forward*)
+
+DB324.DBX154.0   (N)
+END_STEP
+
+TRANSITION Start_Condition (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := DB323.DBX154.0 
+END_TRANSITION
+
+TRANSITION home_Pos_OK (*$_NUM 2*)
+  FROM CheckHomePos
+  TO Check_HVP
+CONDITION := DB1460.DBX132.1 AND DB1483.DBX132.1 AND DB1521.DBX132.1 
+END_TRANSITION
+
+TRANSITION Stop_before_Process (*$_NUM 3*)
+  FROM Check_HVP
+  TO Template_Check
+CONDITION := NOT DB202.DBX130.0 
+END_TRANSITION
+
+TRANSITION Template_Not_IN_Station (*$_NUM 4*)
+  FROM Template_Check
+  TO Type_Check
+CONDITION := I1580.6 AND I1520.4 
+END_TRANSITION
+
+TRANSITION Type_A4 (*$_NUM 36*)
+  FROM Type_Check
+  TO Check_Type
+CONDITION := DB202.DBX162.6 AND DB1507.DBX149.7 
+END_TRANSITION
+
+TRANSITION Type_A3 (*$_NUM 34*)
+  FROM Type_Check
+  TO For_060VR_101_QM5_11
+CONDITION := DB202.DBX162.5 AND DB1507.DBX149.7 
+END_TRANSITION
+
+TRANSITION Forward_060VR_101_QM5 (*$_NUM 35*)
+  FROM For_060VR_101_QM5_11
+  TO Check_Type
+CONDITION := M1637.0 
+END_TRANSITION
+
+TRANSITION Type_A2 (*$_NUM 5*)
+  FROM Type_Check
+  TO For_060VR_101_QM2_11
+CONDITION := DB202.DBX162.4 AND DB1507.DBX149.7 
+END_TRANSITION
+
+TRANSITION Forward_060VR_101_QM2 (*$_NUM 6*)
+  FROM For_060VR_101_QM2_11
+  TO Check_Type
+CONDITION := M1636.2 
+END_TRANSITION
+
+TRANSITION Type_A2_A3_T4_M1E (*$_NUM 106*)
+  FROM Check_Type
+  TO (GST101_QM20_21_22_b, GST102_QM20_21_22_b) :
+CONDITION := ((DB202.DBX162.4 OR (DB202.DBX162.5 ))AND DB202.DBX162.2 AND M3105.0 )
+END_TRANSITION
+
+TRANSITION GST102_QM20_22_BG21_b (*$_NUM 131*)
+  FROM GST102_QM20_21_22_b
+  TO Empty_19
+CONDITION := DB1503.DBX132.1 AND DB1504.DBX132.0 AND DB1505.DBX132.1 
+END_TRANSITION
+
+TRANSITION GST101_QM20_22_BG21_b (*$_NUM 121*)
+  FROM GST101_QM20_21_22_b
+  TO Empty_18
+CONDITION := DB1481.DBX132.1 AND DB1482.DBX132.0 AND DB1459.DBX132.1 
+END_TRANSITION
+
+TRANSITION Logic_17 (*$_NUM 132*)
+  FROM ( Empty_18, Empty_19) 
+  TO Release
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Type_A2_A3_A4 (*$_NUM 107*)
+  FROM Check_Type
+  TO (GST101_QM20_21_22_a, GST102_QM20_21_22_a) :
+CONDITION := ((DB202.DBX162.4 OR (DB202.DBX162.5 OR (DB202.DBX162.6 )))AND NOT M3105.0 )
+END_TRANSITION
+
+TRANSITION GST102_QM20_22_BG21_a (*$_NUM 111*)
+  FROM GST102_QM20_21_22_a
+  TO Empty_17
+CONDITION := DB1503.DBX132.0 AND DB1504.DBX132.1 AND DB1505.DBX132.0 
+END_TRANSITION
+
+TRANSITION GST101_QM20_22_BG21_a (*$_NUM 108*)
+  FROM GST101_QM20_21_22_a
+  TO Empty_16
+CONDITION := DB1481.DBX132.0 AND DB1482.DBX132.1 AND DB1459.DBX132.0 
+END_TRANSITION
+
+TRANSITION Logic_16 (*$_NUM 104*)
+  FROM ( Empty_16, Empty_17) 
+  TO Release
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Rel_060HTS001_Down (*$_NUM 7*)
+  FROM Release
+  TO Check_Body_Pos
+CONDITION := DB323.DBX154.1 
+END_TRANSITION
+
+TRANSITION Body_Check (*$_NUM 8*)
+  FROM Check_Body_Pos
+  TO (Check_Type_2, For_GST101_QM2_3_4_11, For_GST102_QM2_3_4_11) :
+CONDITION := DB1521.DBX133.2 
+END_TRANSITION
+
+TRANSITION Close_GST102_QM2_3_4 (*$_NUM 38*)
+  FROM For_GST102_QM2_3_4_11
+  TO Empty_2
+CONDITION := M1576.6 AND M1576.2 AND M1576.4 
+END_TRANSITION
+
+TRANSITION Close_GST101_QM2_3_4 (*$_NUM 37*)
+  FROM For_GST101_QM2_3_4_11
+  TO Empty_1
+CONDITION := M1516.6 AND M1516.2 AND M1516.4 
+END_TRANSITION
+
+TRANSITION Type_A3_A4_2 (*$_NUM 39*)
+  FROM Check_Type_2
+  TO For_VR_101_QM3_6_8_11
+CONDITION := (DB202.DBX162.5 OR (DB202.DBX162.6 ))
+END_TRANSITION
+
+TRANSITION Close_VR_101_QM3_6_8 (*$_NUM 40*)
+  FROM For_VR_101_QM3_6_8_11
+  TO Empty
+CONDITION := M1636.4 AND M1637.2 AND M1637.6 
+END_TRANSITION
+
+TRANSITION Type_A2_2 (*$_NUM 9*)
+  FROM Check_Type_2
+  TO For_VR_101_QM3_4_11
+CONDITION := DB202.DBX162.4 
+END_TRANSITION
+
+TRANSITION Close_VR_101_QM3_4 (*$_NUM 10*)
+  FROM For_VR_101_QM3_4_11
+  TO Empty
+CONDITION := M1636.4 AND M1636.6 
+END_TRANSITION
+
+TRANSITION Logic_1 (*$_NUM 11*)
+  FROM ( Empty, Empty_1, Empty_2) 
+  TO (Rel_Worker_in_GST101, Rel_Worker_in_GST102) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Worker_in_GST102 (*$_NUM 41*)
+  FROM Rel_Worker_in_GST102
+  TO Safety_Reset_b
+CONDITION := NOT DB2502.DBX14.4 AND M1596.0 
+END_TRANSITION
+
+TRANSITION Reset_Safety_b (*$_NUM 42*)
+  FROM Safety_Reset_b
+  TO Part_Check_GST102
+CONDITION := DB2502.DBX14.4 
+END_TRANSITION
+
+TRANSITION GST102_Part_Check (*$_NUM 43*)
+  FROM Part_Check_GST102
+  TO Empty_8
+CONDITION := DB1483.DBX133.7 AND DB1460.DBX133.7 AND M1596.0 AND DB2502.DBX14.4 AND I6652.1 
+END_TRANSITION
+
+TRANSITION Worker_in_GST101 (*$_NUM 12*)
+  FROM Rel_Worker_in_GST101
+  TO Safety_Reset_a
+CONDITION := M1536.0 AND NOT DB2502.DBX14.4 
+END_TRANSITION
+
+TRANSITION Reset_Safety_a (*$_NUM 13*)
+  FROM Safety_Reset_a
+  TO Part_Check_GST101
+CONDITION := DB2502.DBX14.4 
+END_TRANSITION
+
+TRANSITION GST101_Part_Check (*$_NUM 14*)
+  FROM Part_Check_GST101
+  TO Empty_7
+CONDITION := DB1483.DBX133.7 AND DB1460.DBX133.7 AND DB2502.DBX14.4 AND I6652.1 
+END_TRANSITION
+
+TRANSITION Logic_2 (*$_NUM 15*)
+  FROM ( Empty_7, Empty_8) 
+  TO (Type_Check_3, Type_Check_4) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Type_T4_b (*$_NUM 71*)
+  FROM Type_Check_4
+  TO GST102_QM5_7_11_c
+CONDITION := ((DB202.DBX162.4 OR (DB202.DBX162.5 OR (DB202.DBX162.6 )))AND DB202.DBX162.2 )
+END_TRANSITION
+
+TRANSITION GST102_QM5_7_BG11_c (*$_NUM 72*)
+  FROM GST102_QM5_7_11_c
+  TO Empty_10
+CONDITION := M1577.0 AND M1596.0 
+END_TRANSITION
+
+TRANSITION Type_A2_T5_b (*$_NUM 68*)
+  FROM Type_Check_4
+  TO GST102_QM5_7_11_b
+CONDITION := DB202.DBX162.4 AND DB202.DBX162.3 
+END_TRANSITION
+
+TRANSITION GST102_QM5_7_BG11_b (*$_NUM 69*)
+  FROM GST102_QM5_7_11_b
+  TO GST102_QM8_15_a
+CONDITION := M1577.0 AND M1596.0 
+END_TRANSITION
+
+TRANSITION GST102_QM8_15_BG11_a (*$_NUM 70*)
+  FROM GST102_QM8_15_a
+  TO Empty_10
+CONDITION := M1616.0 AND M1616.4 AND M1616.6 AND M1617.4 AND M1617.6 
+END_TRANSITION
+
+TRANSITION Type_A3_A4_T5_b (*$_NUM 44*)
+  FROM Type_Check_4
+  TO GST102_QM5_7_11_a
+CONDITION := ((DB202.DBX162.5 OR (DB202.DBX162.6 ))AND DB202.DBX162.3 )
+END_TRANSITION
+
+TRANSITION GST102_QM5_7_BG11_a (*$_NUM 45*)
+  FROM GST102_QM5_7_11_a
+  TO GST102_QM9_17_a
+CONDITION := M1577.0 AND M1596.0 
+END_TRANSITION
+
+TRANSITION GST102_QM9_17_BG11_a (*$_NUM 46*)
+  FROM GST102_QM9_17_a
+  TO Empty_10
+CONDITION := M1616.2 AND M1617.0 AND M1617.2 AND M1618.0 AND M1618.2 
+END_TRANSITION
+
+TRANSITION Type_T4_a (*$_NUM 50*)
+  FROM Type_Check_3
+  TO GST101_QM5_6_8_11_c
+CONDITION := ((DB202.DBX162.4 OR (DB202.DBX162.5 OR (DB202.DBX162.6 )))AND DB202.DBX162.2 )
+END_TRANSITION
+
+TRANSITION GST101_QM5_6_8_BG11_c (*$_NUM 51*)
+  FROM GST101_QM5_6_8_11_c
+  TO Empty_9
+CONDITION := M1517.0 AND M1517.2 AND M1536.0 
+END_TRANSITION
+
+TRANSITION Type_A2_T5_a (*$_NUM 47*)
+  FROM Type_Check_3
+  TO GST101_QM5_6_8_11_b
+CONDITION := DB202.DBX162.4 AND DB202.DBX162.3 
+END_TRANSITION
+
+TRANSITION GST101_QM5_6_8_BG11_b (*$_NUM 48*)
+  FROM GST101_QM5_6_8_11_b
+  TO GST101_QM9_16_11
+CONDITION := M1517.0 AND M1517.2 AND M1536.0 
+END_TRANSITION
+
+TRANSITION GST101_QM9_16_BG11 (*$_NUM 49*)
+  FROM GST101_QM9_16_11
+  TO Empty_9
+CONDITION := M1556.0 AND M1556.4 AND M1556.6 AND M1557.4 AND M1557.6 
+END_TRANSITION
+
+TRANSITION Type_A3_A4_T5_a (*$_NUM 16*)
+  FROM Type_Check_3
+  TO GST101_QM5_6_8_11_a
+CONDITION := ((DB202.DBX162.5 OR (DB202.DBX162.6 ))AND DB202.DBX162.3 )
+END_TRANSITION
+
+TRANSITION GST101_QM5_6_8_BG11_a (*$_NUM 17*)
+  FROM GST101_QM5_6_8_11_a
+  TO GST101_QM10_18_11
+CONDITION := M1517.0 AND M1517.2 AND M1536.0 
+END_TRANSITION
+
+TRANSITION GST101_QM10_18_BG11 (*$_NUM 18*)
+  FROM GST101_QM10_18_11
+  TO Empty_9
+CONDITION := M1556.2 AND M1557.0 AND M1557.2 AND M1558.0 AND M1558.2 
+END_TRANSITION
+
+TRANSITION Logic_4 (*$_NUM 19*)
+  FROM ( Empty_9, Empty_10) 
+  TO (Rel_Worker_In_a, Rel_Worker_In_b) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Worker_In_b (*$_NUM 52*)
+  FROM Rel_Worker_In_b
+  TO Template_Check_2
+CONDITION := NOT DB2502.DBX14.4 
+END_TRANSITION
+
+TRANSITION Template_Chk_2 (*$_NUM 53*)
+  FROM Template_Check_2
+  TO GST102_Template_Check
+CONDITION := DB1484.DBX132.1 
+END_TRANSITION
+
+TRANSITION Template_Check_b (*$_NUM 54*)
+  FROM GST102_Template_Check
+  TO Safety_Reset_d
+CONDITION := I1580.6 
+END_TRANSITION
+
+TRANSITION Reset_Safety_d (*$_NUM 55*)
+  FROM Safety_Reset_d
+  TO Empty_12
+CONDITION := DB2502.DBX14.4 AND I6652.1 AND M1603.1 
+END_TRANSITION
+
+TRANSITION Worker_In_a (*$_NUM 20*)
+  FROM Rel_Worker_In_a
+  TO Template_Check_1
+CONDITION := NOT DB2502.DBX14.4 
+END_TRANSITION
+
+TRANSITION Template_Chk_1 (*$_NUM 21*)
+  FROM Template_Check_1
+  TO GST101_Template_Check
+CONDITION := DB1461.DBX132.0 
+END_TRANSITION
+
+TRANSITION Template_Check_a (*$_NUM 22*)
+  FROM GST101_Template_Check
+  TO Safety_Reset_c
+CONDITION := I1520.4 
+END_TRANSITION
+
+TRANSITION Reset_Safety_c (*$_NUM 23*)
+  FROM Safety_Reset_c
+  TO Empty_11
+CONDITION := DB2502.DBX14.4 AND I6652.1 AND M1603.1 
+END_TRANSITION
+
+TRANSITION Logic_3 (*$_NUM 24*)
+  FROM ( Empty_11, Empty_12) 
+  TO Fm1
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION FM1_done (*$_NUM 25*)
+  FROM Fm1
+  TO (Check_type_a, Check_type_b, Check_type_c) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Type_A3_A4_c (*$_NUM 78*)
+  FROM Check_type_c
+  TO GST102_QM5_7_21_b
+CONDITION := (DB202.DBX162.5 OR (DB202.DBX162.6 ))
+END_TRANSITION
+
+TRANSITION GST102_QM5_QM7_BG21_b (*$_NUM 79*)
+  FROM GST102_QM5_7_21_b
+  TO GST102_QM2_4_21_b
+CONDITION := M1577.1 AND M1596.1 
+END_TRANSITION
+
+TRANSITION GST102_QM2_QM4_BG21_b (*$_NUM 80*)
+  FROM GST102_QM2_4_21_b
+  TO GST102_QM16_17_21_a
+CONDITION := M1576.3 AND M1576.5 AND M1576.7 
+END_TRANSITION
+
+TRANSITION GST102_QM16_QM17_BG21_a (*$_NUM 81*)
+  FROM GST102_QM16_17_21_a
+  TO GST102_QM9_13_21_a
+CONDITION := M1618.1 AND M1618.3 
+END_TRANSITION
+
+TRANSITION GST102_QM9_QM13_BG21_a (*$_NUM 82*)
+  FROM GST102_QM9_13_21_a
+  TO Empty_13
+CONDITION := M1616.3 AND M1617.1 AND M1617.3 
+END_TRANSITION
+
+TRANSITION Type_A2_c (*$_NUM 61*)
+  FROM Check_type_c
+  TO GST102_QM5_7_21_a
+CONDITION := DB202.DBX162.4 
+END_TRANSITION
+
+TRANSITION GST102_QM5_QM7_BG21_a (*$_NUM 62*)
+  FROM GST102_QM5_7_21_a
+  TO GST102_QM2_4_21_a
+CONDITION := M1577.1 AND M1596.1 
+END_TRANSITION
+
+TRANSITION GST102_QM2_QM4_BG21_a (*$_NUM 63*)
+  FROM GST102_QM2_4_21_a
+  TO GST102_QM14_15_21_a
+CONDITION := M1576.3 AND M1576.5 AND M1576.7 
+END_TRANSITION
+
+TRANSITION GST102_QM14_QM15_BG21_a (*$_NUM 64*)
+  FROM GST102_QM14_15_21_a
+  TO GST102_QM8_11_21_a
+CONDITION := M1617.5 AND M1617.7 
+END_TRANSITION
+
+TRANSITION GST102_QM8_QM11_BG21_a (*$_NUM 65*)
+  FROM GST102_QM8_11_21_a
+  TO Empty_13
+CONDITION := M1616.1 AND M1616.5 AND M1616.7 
+END_TRANSITION
+
+TRANSITION Type_A3_A4_b (*$_NUM 73*)
+  FROM Check_type_b
+  TO GST101_QM5_8_21_b
+CONDITION := (DB202.DBX162.5 OR (DB202.DBX162.6 ))
+END_TRANSITION
+
+TRANSITION GST101_QM5_QM8_BG21_b (*$_NUM 74*)
+  FROM GST101_QM5_8_21_b
+  TO GST101_QM2_4_21_b
+CONDITION := M1517.1 AND M1517.3 AND M1517.5 AND M1536.1 AND NOT I1502.4 
+END_TRANSITION
+
+TRANSITION GST101_QM2_QM4_BG21_b (*$_NUM 75*)
+  FROM GST101_QM2_4_21_b
+  TO GST101_QM17_18_21_a
+CONDITION := M1516.3 AND M1516.5 AND M1516.7 
+END_TRANSITION
+
+TRANSITION GST101_QM17_QM18_BG21_a (*$_NUM 76*)
+  FROM GST101_QM17_18_21_a
+  TO GST101_QM10_14_21_a
+CONDITION := M1558.1 AND M1558.3 
+END_TRANSITION
+
+TRANSITION GST101_QM10_QM14_BG21_a (*$_NUM 77*)
+  FROM GST101_QM10_14_21_a
+  TO Empty_4
+CONDITION := M1556.3 AND M1557.1 AND M1557.3 
+END_TRANSITION
+
+TRANSITION Type_A2_b (*$_NUM 56*)
+  FROM Check_type_b
+  TO GST101_QM5_8_21_a
+CONDITION := DB202.DBX162.4 
+END_TRANSITION
+
+TRANSITION GST101_QM5_QM8_BG21_a (*$_NUM 57*)
+  FROM GST101_QM5_8_21_a
+  TO GST101_QM2_4_21_a
+CONDITION := M1517.1 AND M1517.3 AND M1517.5 AND M1536.1 AND NOT I1502.4 
+END_TRANSITION
+
+TRANSITION GST101_QM2_QM4_BG21_a (*$_NUM 58*)
+  FROM GST101_QM2_4_21_a
+  TO GST101_QM15_16_21_a
+CONDITION := M1516.3 AND M1516.5 AND M1516.7 
+END_TRANSITION
+
+TRANSITION GST101_QM15_QM16_BG21_a (*$_NUM 59*)
+  FROM GST101_QM15_16_21_a
+  TO GST101_QM9_12_21_a
+CONDITION := M1557.5 AND M1557.7 
+END_TRANSITION
+
+TRANSITION GST101_QM9_QM12_BG21_a (*$_NUM 60*)
+  FROM GST101_QM9_12_21_a
+  TO Empty_4
+CONDITION := M1556.1 AND M1556.5 AND M1556.7 
+END_TRANSITION
+
+TRANSITION Type_A3_A4_a (*$_NUM 66*)
+  FROM Check_type_a
+  TO VR101_QM3_6_8_21_a
+CONDITION := (DB202.DBX162.5 OR (DB202.DBX162.6 ))
+END_TRANSITION
+
+TRANSITION VR101_QM3_QM6_QM8_BG21_a (*$_NUM 67*)
+  FROM VR101_QM3_6_8_21_a
+  TO Empty_3
+CONDITION := M1636.5 AND M1637.3 AND M1637.7 
+END_TRANSITION
+
+TRANSITION Type_A2_a (*$_NUM 26*)
+  FROM Check_type_a
+  TO VR101_QM3_4_21_a
+CONDITION := DB202.DBX162.4 
+END_TRANSITION
+
+TRANSITION VR101_QM3_QM4_BG21_a (*$_NUM 27*)
+  FROM VR101_QM3_4_21_a
+  TO Empty_3
+CONDITION := M1636.5 AND M1636.7 
+END_TRANSITION
+
+TRANSITION Logic_5 (*$_NUM 28*)
+  FROM ( Empty_3, Empty_4, Empty_13) 
+  TO SAP_Select
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Stop_After_Process (*$_NUM 29*)
+  FROM SAP_Select
+  TO Release_1_060HTS001
+CONDITION := NOT DB202.DBX130.1 
+END_TRANSITION
+
+TRANSITION Rel_060HTS001_UP (*$_NUM 30*)
+  FROM Release_1_060HTS001
+  TO Part_Check_Free
+CONDITION := DB323.DBX154.2 
+END_TRANSITION
+
+TRANSITION Part_Free (*$_NUM 31*)
+  FROM Part_Check_Free
+  TO VR101_QM2_5_21_a
+CONDITION := DB1521.DBX132.0 AND DB1460.DBX133.6 AND DB1483.DBX133.6 
+END_TRANSITION
+
+TRANSITION VR101_QM2_QM5_BG21_a (*$_NUM 32*)
+  FROM VR101_QM2_5_21_a
+  TO Ready_mess
+CONDITION := M1636.3 AND M1637.1 
+END_TRANSITION
+
+TRANSITION FM_Msg (*$_NUM 33*)
+  FROM Ready_mess
+  TO INI (*$_JUMP*)
+CONDITION := DB324.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK FB427
+(*$_COM Station 070HTR001 Sequence
+->Initial Step->Check home position
+->070HTS001 EMPTY,Wait for 070HTR001-BG11:4->Read data from RFID->Start 070XSK004->Wait for release 070HTS001->Move elevator down->Finish,Move elevator up->Wait process finished
+->070HTS001 Full,Move out part
+
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial Step*)
+
+DB327.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check home position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB327.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB327.DBX152.1   (N)
+END_STEP
+
+STEP check (*$_NUM 3*):
+(*$_COM Check way@Check way*)
+
+SUPERVISION
+ CONDITION := S003.U > DB327.DBD220 AND NOT T003.TT AND NOT T018.TT 
+END_SUPERVISION
+DB327.DBX152.3   (N)
+END_STEP
+
+STEP Ready (*$_NUM 4*):
+(*$_COM Ready @Ready*)
+
+DB327.DBX152.3   (N)
+END_STEP
+
+STEP Wait_f (*$_NUM 5*):
+(*$_COM Wait for new skid@Wait for new skid*)
+
+DB327.DBX154.6   (N)
+END_STEP
+
+STEP Read_Data_from_RFID (*$_NUM 6*):
+(*$_COM Read data from RFID@Read data from RFID*)
+
+DB327.DBX153.5   (N)
+END_STEP
+
+STEP TLG_NFM (*$_NUM 7*):
+(*$_COM Send telegram not finished@Send telegram not finished*)
+
+DB327.DBX154.2   (N)
+END_STEP
+
+STEP Check_Scrap (*$_NUM 8*):
+(*$_COM Check Scrap@Check_Scrap*)
+
+DB327.DBX152.3   (N)
+END_STEP
+
+STEP Start_070XSK004 (*$_NUM 9*):
+(*$_COM Start 070XSK004@Start 070XSK004*)
+
+DB327.DBX153.6   (N)
+END_STEP
+
+STEP Wait_Release_070HTS001 (*$_NUM 10*):
+(*$_COM Wait for release 070HTS001@Wait for release HTS*)
+
+DB327.DBX152.3   (N)
+END_STEP
+
+STEP Move_down (*$_NUM 11*):
+(*$_COM Move elevator down@Move elevator down*)
+
+DB327.DBX153.4   (N)
+END_STEP
+
+STEP Release1_070XSK004 (*$_NUM 12*):
+(*$_COM Release 1 070XSK004@Release 1 070XSK004*)
+
+DB327.DBX153.7   (N)
+END_STEP
+
+STEP Wait_Release_070HTS001_1 (*$_NUM 13*):
+(*$_COM Wait for release 070HTS001@Wait for release HTS*)
+
+DB327.DBX152.3   (N)
+END_STEP
+
+STEP Move_up (*$_NUM 14*):
+(*$_COM Move elevator up@Move elevator up*)
+
+DB327.DBX153.3   (N)
+END_STEP
+
+STEP Wait_process_FM (*$_NUM 15*):
+(*$_COM Wait process finished@Wait process finished*)
+
+DB327.DBX154.0   (N)
+DB327.DBX154.7   (N)
+DB327.DBX154.1   (N)
+DB327.DBX156.2   (N)
+END_STEP
+
+STEP Empty_c (*$_NUM 16*):
+(*$_COM Empty Step@Empty Step*)
+
+DB327.DBX152.3   (N)
+END_STEP
+
+STEP Ready_mess (*$_NUM 17*):
+(*$_COM Ready message@Ready message*)
+
+DB327.DBX152.2   (N)
+END_STEP
+
+STEP Check_FM (*$_NUM 20*):
+(*$_COM Check FM@Check FM*)
+
+DB327.DBX152.3   (N)
+END_STEP
+
+STEP Wainting_Tran_out (*$_NUM 21*):
+(*$_COM Waiting Transfer@waiting for transfer out*)
+
+DB327.DBX154.5   (N)
+END_STEP
+
+STEP Move_out_part (*$_NUM 22*):
+(*$_COM Move out part@Move out part*)
+
+DB327.DBX153.2   (N)
+END_STEP
+
+STEP Empty_d (*$_NUM 23*):
+(*$_COM Empty Step@Empty Step*)
+
+DB327.DBX152.3   (N)
+END_STEP
+
+STEP Waiting_trans_out_b (*$_NUM 18*):
+(*$_COM Waiting Transfer@Waiting for transfer  out*)
+
+DB327.DBX154.5   (N)
+END_STEP
+
+STEP Move_out_part_1 (*$_NUM 19*):
+(*$_COM Move out part@Move out part*)
+
+DB327.DBX153.2   (N)
+END_STEP
+
+TRANSITION Start_Condition (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := ((NOT DB109.DBX130.0 AND ((DB323.DBX155.2 OR (DB1253.DBX164.7 ))AND DB203.DBX132.0 OR (NOT DB1507.DBX149.7 AND DB203.DBX132.0 OR (DB323.DBX155.2 AND DB203.DBX132.1 )))OR (DB109.DBX130.0 AND ((DB320.DBX155.5 OR (M320.0 ))AND (((DB323.DBX155.2 OR (DB1253.DBX164.7 OR (DB202.DBX132.1 )))AND DB203.DBX132.0 OR (DB323.DBX155.2 AND DB203.DBX132.1 ))AND (DB204.DBX132.0 OR (DB204.DBX132.1 ))))))AND DB328.DBX152.0 AND NOT DB1253.DBX161.3 AND NOT DB1251.DBX161.3 AND NOT DB1253.DBX160.7 )
+END_TRANSITION
+
+TRANSITION GRD (*$_NUM 2*)
+  FROM CheckHomePos
+  TO check
+CONDITION := DB1545.DBX132.1 AND DB1564.DBX132.1 AND DB1595.DBX132.1 
+END_TRANSITION
+
+TRANSITION Feed_out (*$_NUM 18*)
+  FROM check
+  TO Waiting_trans_out_b
+CONDITION := NOT DB323.DBX155.2 AND DB203.DBX130.2 
+END_TRANSITION
+
+TRANSITION Trans22_1 (*$_NUM 19*)
+  FROM Waiting_trans_out_b
+  TO Move_out_part_1
+CONDITION := DB1653.DBX138.0 AND DB331.DBX156.5 
+END_TRANSITION
+
+TRANSITION Part_moved_out_1 (*$_NUM 20*)
+  FROM Move_out_part_1
+  TO Ready_mess
+CONDITION := NOT DB331.DBX156.5 AND NOT DB1586.DBX139.2 
+END_TRANSITION
+
+TRANSITION Feed_In_Out (*$_NUM 3*)
+  FROM check
+  TO (Ready, Check_FM) :
+CONDITION := DB323.DBX155.2 
+END_TRANSITION
+
+TRANSITION Not_FM (*$_NUM 25*)
+  FROM Check_FM
+  TO Empty_d
+CONDITION := NOT DB203.DBX130.2 
+END_TRANSITION
+
+TRANSITION FM (*$_NUM 21*)
+  FROM Check_FM
+  TO Wainting_Tran_out
+CONDITION := DB203.DBX130.2 
+END_TRANSITION
+
+TRANSITION Trans22 (*$_NUM 22*)
+  FROM Wainting_Tran_out
+  TO Move_out_part
+CONDITION := DB1653.DBX138.0 AND DB331.DBX156.5 
+END_TRANSITION
+
+TRANSITION Part_moved_out (*$_NUM 23*)
+  FROM Move_out_part
+  TO Empty_d
+CONDITION := NOT DB331.DBX156.5 AND NOT DB1586.DBX139.2 
+END_TRANSITION
+
+TRANSITION Trans21 (*$_NUM 4*)
+  FROM Ready
+  TO Wait_f
+CONDITION := NOT I2871.2 
+END_TRANSITION
+
+TRANSITION SVAE (*$_NUM 5*)
+  FROM Wait_f
+  TO Read_Data_from_RFID
+CONDITION := I2871.0 AND I2871.1 AND DB1586.DBX149.7 
+END_TRANSITION
+
+TRANSITION Data_ok (*$_NUM 6*)
+  FROM Read_Data_from_RFID
+  TO TLG_NFM
+CONDITION := DB1608.DBX149.1 
+END_TRANSITION
+
+TRANSITION Sended_a (*$_NUM 7*)
+  FROM TLG_NFM
+  TO Check_Scrap
+CONDITION := DB327.DBX154.2 
+END_TRANSITION
+
+TRANSITION Scrap_on (*$_NUM 24*)
+  FROM Check_Scrap
+  TO Wait_process_FM (*$_JUMP*)
+CONDITION := DB203.DBX132.3 
+END_TRANSITION
+
+TRANSITION Scrap_off (*$_NUM 8*)
+  FROM Check_Scrap
+  TO Start_070XSK004
+CONDITION := NOT DB203.DBX132.3 
+END_TRANSITION
+
+TRANSITION started_070XSK004 (*$_NUM 9*)
+  FROM Start_070XSK004
+  TO Wait_Release_070HTS001
+CONDITION := NOT DB328.DBX152.0 
+END_TRANSITION
+
+TRANSITION Wait_release (*$_NUM 10*)
+  FROM Wait_Release_070HTS001
+  TO Move_down
+CONDITION := DB328.DBX164.5 
+END_TRANSITION
+
+TRANSITION Elevator_down (*$_NUM 11*)
+  FROM Move_down
+  TO Release1_070XSK004
+CONDITION := DB1591.DBX133.2 
+END_TRANSITION
+
+TRANSITION Release2_070XSK004 (*$_NUM 12*)
+  FROM Release1_070XSK004
+  TO Wait_Release_070HTS001_1
+CONDITION := NOT DB328.DBX164.5 
+END_TRANSITION
+
+TRANSITION Wait_release1 (*$_NUM 13*)
+  FROM Wait_Release_070HTS001_1
+  TO Move_up
+CONDITION := DB328.DBX164.6 
+END_TRANSITION
+
+TRANSITION Elevator_up (*$_NUM 14*)
+  FROM Move_up
+  TO Wait_process_FM
+CONDITION := DB1591.DBX133.1 
+END_TRANSITION
+
+TRANSITION wait_process (*$_NUM 15*)
+  FROM Wait_process_FM
+  TO Empty_c
+CONDITION := DB328.DBX152.0 AND M1253.1 
+END_TRANSITION
+
+TRANSITION Eins_b (*$_NUM 16*)
+  FROM ( Empty_c, Empty_d) 
+  TO Ready_mess
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Ready_message (*$_NUM 17*)
+  FROM Ready_mess
+  TO INI (*$_JUMP*)
+CONDITION := DB327.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK FB428
+(*$_COM 070VR_101/070GST101/102 Sequence
+->Initial Step->Check home position->Check Stop before process selected->Check A2/A3/A4,A2:070VR_101_QM4 forward(base clamp);A3:070VR_101_QM5 forward(base clamp)
+->Production loads small parts->Release 1 070XSK003(HTS will lower)->Check part control(body in position)->Check A2/A3/A4,A2:070VR_101_QM2/3 forward;A3/A4:070VR_101_QM3/6/8 forward->070GST101 - Production Loads Parts,070GST102 - Production Loads Parts->Close ALL Clamps->Production enters to weld - GST101,GST102->Open all Clamps
+
+
+
+
+
+
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial Step*)
+
+DB328.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check home position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB328.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB328.DBX152.1   (N)
+END_STEP
+
+STEP Check_HVP (*$_NUM 3*):
+(*$_COM Check Stop before process selected@Check Stop after process selected*)
+
+DB328.DBX152.4   (N)
+END_STEP
+
+STEP Check_Type (*$_NUM 4*):
+(*$_COM Check A2/A3/A4@Check A2/A3/A4*)
+
+SUPERVISION
+ CONDITION := S004.U > DB328.DBD220 AND NOT T004.TT AND NOT T035.TT AND NOT T037.TT 
+END_SUPERVISION
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Close_070VR101_QM4 (*$_NUM 5*):
+(*$_COM 070VR_101_QM4 forward(base clamp)@070VR_101_QM2 forward*)
+
+DB328.DBX153.6   (N)
+END_STEP
+
+STEP Release1_070XSK003 (*$_NUM 6*):
+(*$_COM Release 1 070XSK003(HTS will lower)@Release 1 070XSK003*)
+
+DB328.DBX164.5   (N)
+END_STEP
+
+STEP Check_type1 (*$_NUM 7*):
+(*$_COM Check A2/A3/A4@Check A2/A3/A4*)
+
+SUPERVISION
+ CONDITION := S007.U > DB328.DBD220 AND NOT T007.TT AND NOT T038.TT 
+END_SUPERVISION
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Close_QM2_QM3 (*$_NUM 8*):
+(*$_COM 070VR_101_QM2/3 forward@070VR_101_QM3/4 forward*)
+
+DB328.DBX153.4   (N)
+DB328.DBX153.2   (N)
+END_STEP
+
+STEP Empty_step (*$_NUM 9*):
+(*$_COM Empty step@070GST102_QM13 forward*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Worker_load_parts_1 (*$_NUM 10*):
+(*$_COM Production loads small parts@Production loads small parts*)
+
+DB328.DBX164.7   (N)
+DB328.DBX165.0   (N)
+END_STEP
+
+STEP Check_occupied_1 (*$_NUM 11*):
+(*$_COM Check part control(body in position)@Check part control*)
+
+DB328.DBX153.1   (N)
+END_STEP
+
+STEP GST101_load_part (*$_NUM 12*):
+(*$_COM 070GST101 - Production Loads Parts@Check part control an 070GST101_QM16/17 fw*)
+
+DB328.DBX164.7   (N)
+END_STEP
+
+STEP Safety_Reset1 (*$_NUM 13*):
+(*$_COM Safety Area Reset@Wait reset Safety Area*)
+
+DB328.DBX164.7   (N)
+END_STEP
+
+STEP Check_occupied2 (*$_NUM 14*):
+(*$_COM 070GST101 - Check Part Control@070GST101 - Check Part Control*)
+
+DB328.DBX163.7   (N)
+DB328.DBX164.7   (N)
+END_STEP
+
+STEP Empty_7 (*$_NUM 15*):
+(*$_COM Empty Step@Empty Step*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Close_070GST101_QM8_16 (*$_NUM 16*):
+(*$_COM 070GST101 QM16QM8 forword@070GST101_QM19 forward*)
+
+DB328.DBX161.4   (N)
+DB328.DBX160.2   (N)
+END_STEP
+
+STEP Check_type3 (*$_NUM 17*):
+(*$_COM 070GST101 - check type@070GST101 - check type*)
+
+SUPERVISION
+ CONDITION := S017.U > DB328.DBD220 AND NOT T017.TT AND NOT T046.TT AND NOT T048.TT AND NOT T051.TT AND NOT T052.TT 
+END_SUPERVISION
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Close_QM2_QM10_1 (*$_NUM 18*):
+(*$_COM 070GST101 - QM5 backward QM2QM4QM9QM10 forward@070GST101_QM9/11 type variant forward*)
+
+DB328.DBX158.6   (N)
+DB328.DBX159.2   (N)
+DB328.DBX159.5   (N)
+DB328.DBX160.4   (N)
+DB328.DBX160.6   (N)
+END_STEP
+
+STEP Empty_9 (*$_NUM 19*):
+(*$_COM Empty Step@Empty Step*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Production_weld_GST101 (*$_NUM 20*):
+(*$_COM Production enters to weld - GST101@Production enters to weld - GST101*)
+
+DB328.DBX164.7   (N)
+END_STEP
+
+STEP Wait_safety_reset1 (*$_NUM 21*):
+(*$_COM Wait reset Safety Area@Wait reset Safety Area*)
+
+DB328.DBX164.7   (N)
+END_STEP
+
+STEP Empty_11 (*$_NUM 22*):
+(*$_COM Empty Step@Empty Step*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Check_type_2 (*$_NUM 23*):
+(*$_COM Check A2/A3/A4@Check A2/A3/A4*)
+
+SUPERVISION
+ CONDITION := S023.U > DB328.DBD220 AND NOT T023.TT AND NOT T055.TT 
+END_SUPERVISION
+DB328.DBX163.0   (N)
+END_STEP
+
+STEP open_VR101_QM2_QM3 (*$_NUM 24*):
+(*$_COM 070VR_101_QM3/2 backward@070VR_101_QM3/4 backward*)
+
+DB328.DBX153.5   (N)
+DB328.DBX153.3   (N)
+END_STEP
+
+STEP Empty_step1 (*$_NUM 25*):
+(*$_COM Empty step@empty*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Open_QM8_QM16_QM17_1 (*$_NUM 26*):
+(*$_COM GST101 - Front ClampsQM8QM16QM17 - Backward@070GST101_QM8 backward*)
+
+DB328.DBX160.3   (N)
+DB328.DBX161.5   (N)
+DB328.DBX161.7   (N)
+END_STEP
+
+STEP Check_type_6 (*$_NUM 27*):
+(*$_COM Check type@Step comment*)
+
+SUPERVISION
+ CONDITION := S027.U > DB328.DBD220 AND NOT T027.TT AND NOT T060.TT AND NOT T062.TT 
+END_SUPERVISION
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP open_QM2_QM10_1 (*$_NUM 28*):
+(*$_COM GST101 - QM2QM4QM9QM10 - Backward@070GST101_QM10/12/16/17/19 backward*)
+
+DB328.DBX160.7   (N)
+DB328.DBX160.5   (N)
+DB328.DBX159.3   (N)
+DB328.DBX158.7   (N)
+DB328.DBX159.4   (N)
+END_STEP
+
+STEP Empty_3 (*$_NUM 29*):
+(*$_COM Empty Step@Empty Step*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Check_HNP (*$_NUM 30*):
+(*$_COM Check Stop after process selected@Check Stop after process selected*)
+
+DB328.DBX152.5   (N)
+END_STEP
+
+STEP Release2_070XSK003 (*$_NUM 31*):
+(*$_COM Release 2 070XSK003@Release 2 070XSK003*)
+
+DB328.DBX164.6   (N)
+END_STEP
+
+STEP Check_Part_free (*$_NUM 32*):
+(*$_COM Check part control@Check part control*)
+
+DB328.DBX153.0   (N)
+END_STEP
+
+STEP Close_QM4QM5 (*$_NUM 33*):
+(*$_COM 070VR_101_QM4/5 backward@070VR_101_QM2/5 backward*)
+
+DB328.DBX153.7   (N)
+DB328.DBX154.1   (N)
+END_STEP
+
+STEP Ready_mess (*$_NUM 34*):
+(*$_COM Ready message@Ready message*)
+
+DB328.DBX152.2   (N)
+END_STEP
+
+STEP open_QM3_QM12_1 (*$_NUM 56*):
+(*$_COM GST101 - QM3QM7QM11QM12 - Backward@Step comment*)
+
+DB328.DBX161.3   (N)
+DB328.DBX161.1   (N)
+DB328.DBX160.1   (N)
+DB328.DBX159.1   (N)
+DB328.DBX159.6   (N)
+END_STEP
+
+STEP Open_QM8_QM16_QM17 (*$_NUM 52*):
+(*$_COM GST102 - Front ClampsQM8QM16QM17 - Backward@Step comment*)
+
+DB328.DBX156.5   (N)
+DB328.DBX158.1   (N)
+DB328.DBX158.3   (N)
+END_STEP
+
+STEP Check_type_5 (*$_NUM 53*):
+(*$_COM Check type@Check type*)
+
+SUPERVISION
+ CONDITION := S053.U > DB328.DBD220 AND NOT T058.TT AND NOT T070.TT AND NOT T072.TT 
+END_SUPERVISION
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP open_QM3_QM12 (*$_NUM 54*):
+(*$_COM GST102 - QM3QM6QM11QM12 - Backward@070GST102_QM10/12/13/16/17/19 backward*)
+
+DB328.DBX157.5   (N)
+DB328.DBX157.3   (N)
+DB328.DBX156.1   (N)
+DB328.DBX155.3   (N)
+DB328.DBX156.2   (N)
+END_STEP
+
+STEP Empty_13 (*$_NUM 55*):
+(*$_COM Empty Step@Empty Step*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP open_QM2_QM10 (*$_NUM 60*):
+(*$_COM GST102 - QM2QM4QM9QM10 - Backward@070GST102_QM10/12/13/16/17/19 backward*)
+
+DB328.DBX156.7   (N)
+DB328.DBX157.1   (N)
+DB328.DBX155.1   (N)
+DB328.DBX155.5   (N)
+DB328.DBX155.6   (N)
+END_STEP
+
+STEP open_VR101_QM3_QM8 (*$_NUM 51*):
+(*$_COM 070VR_101_QM3/6/8 backward@070VR_101_QM3/6/8 backward*)
+
+DB328.DBX154.3   (N)
+DB328.DBX153.5   (N)
+DB328.DBX154.5   (N)
+END_STEP
+
+STEP Production_weld_GST102 (*$_NUM 48*):
+(*$_COM Production enters to weld - GST102@Production enters to weld - GST102*)
+
+DB328.DBX165.0   (N)
+END_STEP
+
+STEP Wait_safety_reset (*$_NUM 49*):
+(*$_COM Wait reset Safety Area@Wait reset Safety Area*)
+
+DB328.DBX165.0   (N)
+END_STEP
+
+STEP Empty_12 (*$_NUM 50*):
+(*$_COM Empty Step@Empty Step*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Close_QM3_QM12_2 (*$_NUM 45*):
+(*$_COM 070GST101 - QM6 backward QM3QM7QM11QM12 forward@070GST101 - QM6 backward QM3QM7QM11QM12 forward*)
+
+DB328.DBX159.7   (N)
+DB328.DBX159.0   (N)
+DB328.DBX160.0   (N)
+DB328.DBX161.0   (N)
+DB328.DBX161.2   (N)
+END_STEP
+
+STEP Close_qm17_1 (*$_NUM 46*):
+(*$_COM 070GST101 -QM17 Forward@070GST101 -QM17 Forward*)
+
+DB328.DBX161.6   (N)
+END_STEP
+
+STEP Close_QM3_QM12_3 (*$_NUM 47*):
+(*$_COM 070GST101 - QM6 backward QM3QM7QM11QM12 forward@070GST101 - QM6 backward QM3QM7QM11QM12 forward*)
+
+DB328.DBX159.7   (N)
+DB328.DBX159.0   (N)
+DB328.DBX160.0   (N)
+DB328.DBX161.0   (N)
+DB328.DBX161.2   (N)
+END_STEP
+
+STEP Close_070GST102_QM8_16 (*$_NUM 41*):
+(*$_COM 070GST102 QM16QM8 forward@070GST102 QM16QM8 forward*)
+
+DB328.DBX158.0   (N)
+DB328.DBX156.4   (N)
+END_STEP
+
+STEP Check_type2 (*$_NUM 42*):
+(*$_COM 070GST102 - check type@070GST102 - check type*)
+
+SUPERVISION
+ CONDITION := S042.U > DB328.DBD220 AND NOT T044.TT AND NOT T063.TT AND NOT T065.TT AND NOT T068.TT AND NOT T069.TT 
+END_SUPERVISION
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Close_QM2_QM10 (*$_NUM 43*):
+(*$_COM 070GST102 - QM5 backward QM2QM4QM9QM10 forward@070GST101_QM9/11 type variant forward*)
+
+DB328.DBX155.0   (N)
+DB328.DBX155.4   (N)
+DB328.DBX155.7   (N)
+DB328.DBX156.6   (N)
+DB328.DBX157.0   (N)
+END_STEP
+
+STEP Empty_10 (*$_NUM 44*):
+(*$_COM Empty Step@Empty Step*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Close_QM3_QM12_1 (*$_NUM 57*):
+(*$_COM 070GST102 - QM7 backward QM3QM6QM11QM12 forward@070GST102 - QM7 backward QM3QM6QM11QM12 forward*)
+
+DB328.DBX156.3   (N)
+DB328.DBX155.2   (N)
+DB328.DBX156.0   (N)
+DB328.DBX157.2   (N)
+DB328.DBX157.4   (N)
+END_STEP
+
+STEP Close_qm17 (*$_NUM 58*):
+(*$_COM 070GST102 -QM17 Forward@070GST102 -QM17 Forward*)
+
+DB328.DBX158.2   (N)
+END_STEP
+
+STEP Close_QM3_QM12 (*$_NUM 59*):
+(*$_COM 070GST102 - QM7 backward QM3QM6QM11QM12 forward@070GST102 - QM7 backward QM3QM6QM11QM12 forward*)
+
+DB328.DBX156.3   (N)
+DB328.DBX155.2   (N)
+DB328.DBX156.0   (N)
+DB328.DBX157.2   (N)
+DB328.DBX157.4   (N)
+END_STEP
+
+STEP GST102_load_part (*$_NUM 37*):
+(*$_COM 070GST102 - Production Loads Parts@Check part control an 070GST102_QM16/17 fw*)
+
+DB328.DBX165.0   (N)
+END_STEP
+
+STEP Safety_Reset (*$_NUM 38*):
+(*$_COM Safety Area Reset@Wait reset Safety Area*)
+
+DB328.DBX165.0   (N)
+END_STEP
+
+STEP Check_occupied1 (*$_NUM 39*):
+(*$_COM 070GST102 - Check Part Control@070GST102 - Check Part Control*)
+
+DB328.DBX164.1   (N)
+DB328.DBX165.0   (N)
+END_STEP
+
+STEP Empty_8 (*$_NUM 40*):
+(*$_COM Empty Step@Empty Step*)
+
+DB328.DBX152.3   (N)
+END_STEP
+
+STEP Close_QM3_QM6_QM8 (*$_NUM 36*):
+(*$_COM 070VR_101_QM3/6/8 forward@070VR_101_QM3/6/8 forward*)
+
+DB328.DBX153.4   (N)
+DB328.DBX154.2   (N)
+DB328.DBX154.4   (N)
+END_STEP
+
+STEP Close_070VR101_QM5 (*$_NUM 35*):
+(*$_COM 070VR_101_QM5 forward(base clamp)@070VR_101_QM5 forward*)
+
+DB328.DBX154.0   (N)
+END_STEP
+
+TRANSITION Start_Condition (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := DB327.DBX153.6 
+END_TRANSITION
+
+TRANSITION homeposition_ok (*$_NUM 2*)
+  FROM CheckHomePos
+  TO Check_HVP
+CONDITION := DB1545.DBX132.1 AND DB1564.DBX132.1 AND DB1595.DBX132.1 
+END_TRANSITION
+
+TRANSITION HVP_reached (*$_NUM 3*)
+  FROM Check_HVP
+  TO Check_Type
+CONDITION := NOT DB203.DBX130.0 
+END_TRANSITION
+
+TRANSITION A4 (*$_NUM 37*)
+  FROM Check_Type
+  TO Release1_070XSK003
+CONDITION := DB203.DBX162.6 
+END_TRANSITION
+
+TRANSITION A3 (*$_NUM 35*)
+  FROM Check_Type
+  TO Close_070VR101_QM5
+CONDITION := DB203.DBX162.5 
+END_TRANSITION
+
+TRANSITION QM5_11 (*$_NUM 36*)
+  FROM Close_070VR101_QM5
+  TO Release1_070XSK003
+CONDITION := M1737.0 
+END_TRANSITION
+
+TRANSITION A2 (*$_NUM 4*)
+  FROM Check_Type
+  TO Close_070VR101_QM4
+CONDITION := DB203.DBX162.4 
+END_TRANSITION
+
+TRANSITION QM4_11 (*$_NUM 5*)
+  FROM Close_070VR101_QM4
+  TO Release1_070XSK003
+CONDITION := M1736.6 
+END_TRANSITION
+
+TRANSITION Rel_070XSK003 (*$_NUM 6*)
+  FROM Release1_070XSK003
+  TO Check_type1
+CONDITION := DB327.DBX153.7 AND DB1595.DBX133.2 
+END_TRANSITION
+
+TRANSITION A3_A4_1 (*$_NUM 38*)
+  FROM Check_type1
+  TO Close_QM3_QM6_QM8
+CONDITION := (DB203.DBX162.5 OR (DB203.DBX162.6 ))
+END_TRANSITION
+
+TRANSITION QM3_QM6_QM8_11 (*$_NUM 39*)
+  FROM Close_QM3_QM6_QM8
+  TO Empty_step
+CONDITION := M1736.4 AND M1737.2 AND M1737.6 
+END_TRANSITION
+
+TRANSITION A2_1 (*$_NUM 7*)
+  FROM Check_type1
+  TO Close_QM2_QM3
+CONDITION := DB203.DBX162.4 
+END_TRANSITION
+
+TRANSITION QM2_QM3_11 (*$_NUM 8*)
+  FROM Close_QM2_QM3
+  TO Empty_step
+CONDITION := M1736.4 AND M1736.2 
+END_TRANSITION
+
+TRANSITION Eins (*$_NUM 9*)
+  FROM Empty_step
+  TO Worker_load_parts_1
+CONDITION := NOT M500.2 
+END_TRANSITION
+
+TRANSITION Load_small_parts_1 (*$_NUM 10*)
+  FROM Worker_load_parts_1
+  TO Check_occupied_1
+CONDITION := NOT DB2504.DBX14.5 AND I1661.6 AND I1701.6 
+END_TRANSITION
+
+TRANSITION body_inposition_1 (*$_NUM 11*)
+  FROM Check_occupied_1
+  TO (GST101_load_part, GST102_load_part) :
+CONDITION := DB1595.DBX133.2 
+END_TRANSITION
+
+TRANSITION Load_part (*$_NUM 40*)
+  FROM GST102_load_part
+  TO Safety_Reset
+CONDITION := (((DB203.DBX162.4 OR (DB203.DBX162.5 OR (DB203.DBX162.6 AND DB203.DBX162.2 )))AND M1716.0 OR (DB203.DBX162.6 AND DB203.DBX162.3 AND M1676.0 AND (M1716.2 OR (NOT M3015.0 ))))AND NOT DB2504.DBX14.5 )
+END_TRANSITION
+
+TRANSITION Safety_OK (*$_NUM 41*)
+  FROM Safety_Reset
+  TO Check_occupied1
+CONDITION := DB2504.DBX14.5 
+END_TRANSITION
+
+TRANSITION Parts_ok (*$_NUM 42*)
+  FROM Check_occupied1
+  TO Empty_8
+CONDITION := DB1545.DBX133.7 AND DB1564.DBX133.7 AND NOT M1676.6 AND I6652.3 
+END_TRANSITION
+
+TRANSITION Load_part1 (*$_NUM 12*)
+  FROM GST101_load_part
+  TO Safety_Reset1
+CONDITION := (((DB203.DBX162.4 OR (DB203.DBX162.5 OR (DB203.DBX162.6 AND DB203.DBX162.2 )))AND M1676.0 OR (DB203.DBX162.6 AND DB203.DBX162.3 AND M1676.0 AND (M1676.2 OR (NOT M3015.0 ))))AND NOT DB2504.DBX14.5 )
+END_TRANSITION
+
+TRANSITION Safety_OK1 (*$_NUM 13*)
+  FROM Safety_Reset1
+  TO Check_occupied2
+CONDITION := DB2504.DBX14.5 
+END_TRANSITION
+
+TRANSITION Parts_ok1 (*$_NUM 14*)
+  FROM Check_occupied2
+  TO Empty_7
+CONDITION := DB1545.DBX133.7 AND DB1564.DBX133.7 AND NOT M1638.1 AND I6652.3 
+END_TRANSITION
+
+TRANSITION BS_Ok (*$_NUM 15*)
+  FROM ( Empty_7, Empty_8) 
+  TO (Close_070GST101_QM8_16, Close_070GST102_QM8_16) :
+CONDITION := DB2504.DBX14.5 
+END_TRANSITION
+
+TRANSITION QM8_QM16_11 (*$_NUM 43*)
+  FROM Close_070GST102_QM8_16
+  TO Check_type2
+CONDITION := M1716.0 AND M1697.6 
+END_TRANSITION
+
+TRANSITION A2_A3_A4_T4 (*$_NUM 69*)
+  FROM Check_type2
+  TO Empty_10
+CONDITION := ((DB203.DBX162.4 OR (DB203.DBX162.5 OR (DB203.DBX162.6 )))AND DB203.DBX162.2 )
+END_TRANSITION
+
+TRANSITION V43V39ZE6b (*$_NUM 68*)
+  FROM Check_type2
+  TO Close_QM3_QM12
+CONDITION := DB203.DBX162.6 AND DB203.DBX162.3 AND NOT M3015.0 
+END_TRANSITION
+
+TRANSITION A4_T5_NOT_V43V39ZE6b (*$_NUM 65*)
+  FROM Check_type2
+  TO Close_qm17
+CONDITION := DB203.DBX162.6 AND DB203.DBX162.3 AND M3015.0 
+END_TRANSITION
+
+TRANSITION QM17_11 (*$_NUM 66*)
+  FROM Close_qm17
+  TO Close_QM3_QM12
+CONDITION := M1716.2 
+END_TRANSITION
+
+TRANSITION QM7_21_QM3_QM12_11 (*$_NUM 67*)
+  FROM Close_QM3_QM12
+  TO Empty_10
+CONDITION := M1697.5 AND M1696.4 AND M1697.2 AND M1698.4 AND M1698.6 
+END_TRANSITION
+
+TRANSITION A3_T5 (*$_NUM 63*)
+  FROM Check_type2
+  TO Close_QM3_QM12_1
+CONDITION := DB203.DBX162.5 AND DB203.DBX162.3 
+END_TRANSITION
+
+TRANSITION QM7_21_QM3_QM12_11_1 (*$_NUM 64*)
+  FROM Close_QM3_QM12_1
+  TO Empty_10
+CONDITION := M1697.5 AND M1696.4 AND M1697.2 AND M1698.4 AND M1698.6 
+END_TRANSITION
+
+TRANSITION A2_T5 (*$_NUM 44*)
+  FROM Check_type2
+  TO Close_QM2_QM10
+CONDITION := DB203.DBX162.4 AND DB203.DBX162.3 
+END_TRANSITION
+
+TRANSITION QM5_21_QM2_QM10_11 (*$_NUM 45*)
+  FROM Close_QM2_QM10
+  TO Empty_10
+CONDITION := M1696.2 AND M1696.6 AND M1697.1 AND M1698.0 AND M1698.2 
+END_TRANSITION
+
+TRANSITION QM8_QM16_11_1 (*$_NUM 16*)
+  FROM Close_070GST101_QM8_16
+  TO Check_type3
+CONDITION := M1676.0 AND M1657.6 
+END_TRANSITION
+
+TRANSITION A2_A3_A4_T4_1 (*$_NUM 52*)
+  FROM Check_type3
+  TO Empty_9
+CONDITION := ((DB203.DBX162.4 OR (DB203.DBX162.5 OR (DB203.DBX162.6 )))AND DB203.DBX162.2 )
+END_TRANSITION
+
+TRANSITION V43V39ZE6 (*$_NUM 51*)
+  FROM Check_type3
+  TO Close_QM3_QM12_3
+CONDITION := DB203.DBX162.6 AND DB203.DBX162.3 AND NOT M3015.0 
+END_TRANSITION
+
+TRANSITION A4_T5_NOT_V43V39ZE6 (*$_NUM 48*)
+  FROM Check_type3
+  TO Close_qm17_1
+CONDITION := DB203.DBX162.6 AND DB203.DBX162.3 AND M3015.0 
+END_TRANSITION
+
+TRANSITION QM17_11_1 (*$_NUM 49*)
+  FROM Close_qm17_1
+  TO Close_QM3_QM12_3
+CONDITION := M1676.2 
+END_TRANSITION
+
+TRANSITION QM6_21_QM3_QM12_11_1 (*$_NUM 50*)
+  FROM Close_QM3_QM12_3
+  TO Empty_9
+CONDITION := M1657.3 AND M1656.4 AND M1657.4 AND M1658.4 AND M1658.6 
+END_TRANSITION
+
+TRANSITION A3_T5_1 (*$_NUM 46*)
+  FROM Check_type3
+  TO Close_QM3_QM12_2
+CONDITION := DB203.DBX162.5 AND DB203.DBX162.3 
+END_TRANSITION
+
+TRANSITION QM6_21_QM3_QM12_11 (*$_NUM 47*)
+  FROM Close_QM3_QM12_2
+  TO Empty_9
+CONDITION := M1657.3 AND M1656.4 AND M1657.4 AND M1658.4 AND M1658.6 
+END_TRANSITION
+
+TRANSITION A2_T5_1 (*$_NUM 17*)
+  FROM Check_type3
+  TO Close_QM2_QM10_1
+CONDITION := DB203.DBX162.4 AND DB203.DBX162.3 
+END_TRANSITION
+
+TRANSITION QM5_21_QM2_QM10_11_1 (*$_NUM 18*)
+  FROM Close_QM2_QM10_1
+  TO Empty_9
+CONDITION := M1657.1 AND M1656.2 AND M1656.6 AND M1658.0 AND M1658.2 
+END_TRANSITION
+
+TRANSITION Eins_4 (*$_NUM 19*)
+  FROM ( Empty_9, Empty_10) 
+  TO (Production_weld_GST101, Production_weld_GST102) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Production_to_weld (*$_NUM 53*)
+  FROM Production_weld_GST102
+  TO Wait_safety_reset
+CONDITION := NOT DB2504.DBX14.5 
+END_TRANSITION
+
+TRANSITION safety_ok_1 (*$_NUM 54*)
+  FROM Wait_safety_reset
+  TO Empty_12
+CONDITION := DB2504.DBX14.5 AND ((DB1564.DBX132.0 AND DB1564.DBX132.4 AND DB1564.DBX132.3 AND DB1565.DBX132.0 OR (NOT DB1545.DBX131.0 ))AND I6652.3 )
+END_TRANSITION
+
+TRANSITION Production_to_weld1 (*$_NUM 20*)
+  FROM Production_weld_GST101
+  TO Wait_safety_reset1
+CONDITION := NOT DB2504.DBX14.5 
+END_TRANSITION
+
+TRANSITION safety_ok_2 (*$_NUM 21*)
+  FROM Wait_safety_reset1
+  TO Empty_11
+CONDITION := DB2504.DBX14.5 AND ((DB1545.DBX132.0 AND DB1545.DBX132.4 AND DB1545.DBX132.3 AND DB1546.DBX132.0 OR (NOT DB1545.DBX131.0 ))AND I6652.3 )
+END_TRANSITION
+
+TRANSITION Eins_5 (*$_NUM 22*)
+  FROM ( Empty_11, Empty_12) 
+  TO Check_type_2
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION A3_A4_2 (*$_NUM 55*)
+  FROM Check_type_2
+  TO open_VR101_QM3_QM8
+CONDITION := (DB203.DBX162.5 OR (DB203.DBX162.6 ))
+END_TRANSITION
+
+TRANSITION QM3_QM6_QM8_21 (*$_NUM 56*)
+  FROM open_VR101_QM3_QM8
+  TO Empty_step1
+CONDITION := M1736.5 AND M1737.3 AND M1737.7 
+END_TRANSITION
+
+TRANSITION A2_2 (*$_NUM 23*)
+  FROM Check_type_2
+  TO open_VR101_QM2_QM3
+CONDITION := DB203.DBX162.4 
+END_TRANSITION
+
+TRANSITION QM2_QM3_21 (*$_NUM 24*)
+  FROM open_VR101_QM2_QM3
+  TO Empty_step1
+CONDITION := M1736.5 AND M1736.3 
+END_TRANSITION
+
+TRANSITION Eins_3 (*$_NUM 25*)
+  FROM Empty_step1
+  TO (Open_QM8_QM16_QM17_1, Open_QM8_QM16_QM17) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION QM8_QM16_QM17_21 (*$_NUM 57*)
+  FROM Open_QM8_QM16_QM17
+  TO Check_type_5
+CONDITION := M1697.7 AND M1716.1 AND M1716.3 
+END_TRANSITION
+
+TRANSITION A2_A3_A4_T4_2 (*$_NUM 72*)
+  FROM Check_type_5
+  TO Empty_13
+CONDITION := ((DB203.DBX162.4 OR (DB203.DBX162.5 OR (DB203.DBX162.6 )))AND DB203.DBX162.2 )
+END_TRANSITION
+
+TRANSITION A2_T5_2 (*$_NUM 70*)
+  FROM Check_type_5
+  TO open_QM2_QM10
+CONDITION := DB203.DBX162.4 AND DB203.DBX162.3 
+END_TRANSITION
+
+TRANSITION QM2_QM10_21 (*$_NUM 71*)
+  FROM open_QM2_QM10
+  TO Empty_13
+CONDITION := M1696.7 AND M1696.3 AND M1697.0 AND M1698.3 AND M1698.1 
+END_TRANSITION
+
+TRANSITION A3_A4_T5_2 (*$_NUM 58*)
+  FROM Check_type_5
+  TO open_QM3_QM12
+CONDITION := ((DB203.DBX162.6 OR (DB203.DBX162.5 ))AND DB203.DBX162.3 )
+END_TRANSITION
+
+TRANSITION QM3_QM12_21 (*$_NUM 59*)
+  FROM open_QM3_QM12
+  TO Empty_13
+CONDITION := M1697.3 AND M1696.5 AND M1697.4 AND M1698.5 AND M1698.7 
+END_TRANSITION
+
+TRANSITION QM8_QM16_QM17_21_1 (*$_NUM 26*)
+  FROM Open_QM8_QM16_QM17_1
+  TO Check_type_6
+CONDITION := M1657.7 AND M1676.1 AND M1676.3 
+END_TRANSITION
+
+TRANSITION A2_A3_A4_T4_3 (*$_NUM 62*)
+  FROM Check_type_6
+  TO Empty_3
+CONDITION := ((DB203.DBX162.4 OR (DB203.DBX162.5 OR (DB203.DBX162.6 )))AND DB203.DBX162.2 )
+END_TRANSITION
+
+TRANSITION A3_A4_T5_3 (*$_NUM 60*)
+  FROM Check_type_6
+  TO open_QM3_QM12_1
+CONDITION := ((DB203.DBX162.6 OR (DB203.DBX162.5 ))AND DB203.DBX162.3 )
+END_TRANSITION
+
+TRANSITION QM3_QM12_21_1 (*$_NUM 61*)
+  FROM open_QM3_QM12_1
+  TO Empty_3
+CONDITION := M1657.5 AND M1656.5 AND M1657.2 AND M1658.5 AND M1658.7 
+END_TRANSITION
+
+TRANSITION A2_T5_3 (*$_NUM 27*)
+  FROM Check_type_6
+  TO open_QM2_QM10_1
+CONDITION := DB203.DBX162.4 AND DB203.DBX162.3 
+END_TRANSITION
+
+TRANSITION QM2_QM10_21_1 (*$_NUM 28*)
+  FROM open_QM2_QM10_1
+  TO Empty_3
+CONDITION := M1656.7 AND M1656.3 AND M1657.0 AND M1658.3 AND M1658.1 
+END_TRANSITION
+
+TRANSITION Eins_6 (*$_NUM 29*)
+  FROM ( Empty_3, Empty_13) 
+  TO Check_HNP
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION reached_HNP (*$_NUM 30*)
+  FROM Check_HNP
+  TO Release2_070XSK003
+CONDITION := NOT DB203.DBX130.1 
+END_TRANSITION
+
+TRANSITION Release_070XSK003 (*$_NUM 31*)
+  FROM Release2_070XSK003
+  TO Check_Part_free
+CONDITION := DB327.DBX154.0 
+END_TRANSITION
+
+TRANSITION reached_free (*$_NUM 32*)
+  FROM Check_Part_free
+  TO Close_QM4QM5
+CONDITION := DB1595.DBX132.0 AND DB1545.DBX133.6 AND DB1545.DBX133.6 AND DB1564.DBX133.6 
+END_TRANSITION
+
+TRANSITION QM4_QM5_21 (*$_NUM 33*)
+  FROM Close_QM4QM5
+  TO Ready_mess
+CONDITION := M1736.7 AND M1737.1 
+END_TRANSITION
+
+TRANSITION Ready_message (*$_NUM 34*)
+  FROM Ready_mess
+  TO INI (*$_JUMP*)
+CONDITION := DB328.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK FB431
+(*$_COM Station 080HTR001 Sequence
+->Initial Step->Check home position
+->080HTS001 EMPTY,Wait for 080HTR001-BG11:4->Read data from RFID->Check A2/A3/A4,Fixture M1 and M2 goes to position A2,Fixture M1 and M2 goes to position A3,
+Fixture M1 and M2 goes to position A4->Start 080XSK004->Wait for release 080HTS001->Move elevator down->Finish,Move elevator up->Wait process finished
+->080HTS001 Full,Move out part
+
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial Step*)
+
+DB331.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check home position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB331.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB331.DBX152.1   (N)
+END_STEP
+
+STEP check (*$_NUM 3*):
+(*$_COM Check way@Check way*)
+
+SUPERVISION
+ CONDITION := S003.U > DB331.DBD220 AND NOT T003.TT AND NOT T019.TT 
+END_SUPERVISION
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Wait_f (*$_NUM 4*):
+(*$_COM Wait for new skid@Wait for new skid*)
+
+SUPERVISION
+ CONDITION := S004.U > DB331.DBD220 AND T004.TT 
+END_SUPERVISION
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Transfer_in (*$_NUM 5*):
+(*$_COM Transfer In@Transfer In*)
+
+DB331.DBX156.5   (N)
+END_STEP
+
+STEP Read_Data_from_RFID (*$_NUM 6*):
+(*$_COM Read data from RFID@Read data from RFID*)
+
+DB331.DBX153.5   (N)
+END_STEP
+
+STEP TLG_NFM (*$_NUM 7*):
+(*$_COM Send telegram not finished@Send telegram not finished*)
+
+DB331.DBX155.3   (N)
+END_STEP
+
+STEP Empty_1 (*$_NUM 8*):
+(*$_COM Empty Step@Empty Step*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Check_Scrap (*$_NUM 9*):
+(*$_COM Check Scrap@Check Scrap*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Start_080XSK004 (*$_NUM 10*):
+(*$_COM Start 080XSK004@Start 080XSK004*)
+
+DB331.DBX153.6   (N)
+END_STEP
+
+STEP Wait_release (*$_NUM 11*):
+(*$_COM Wait for release 080HTS001@Wait for release HTS*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Move_down (*$_NUM 12*):
+(*$_COM Move elevator down@Move elevator down*)
+
+DB331.DBX153.4   (N)
+END_STEP
+
+STEP Release1_080XSK004 (*$_NUM 13*):
+(*$_COM Release 1 080XSK004@Release 1 080XSK004*)
+
+DB331.DBX153.7   (N)
+END_STEP
+
+STEP Wait_release_hts (*$_NUM 14*):
+(*$_COM Wait for release 080HTS001@Wait for release HTS*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Move_up (*$_NUM 15*):
+(*$_COM Move elevator up@Move elevator up*)
+
+DB331.DBX153.3   (N)
+END_STEP
+
+STEP Wait_process_FM (*$_NUM 16*):
+(*$_COM Wait process finished@Wait process finished*)
+
+DB331.DBX154.0   (N)
+DB331.DBX156.6   (N)
+DB331.DBX155.2   (N)
+DB331.DBX157.0   (N)
+END_STEP
+
+STEP Empty_c (*$_NUM 17*):
+(*$_COM Empty Step@Empty Step*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Ready_mess (*$_NUM 18*):
+(*$_COM Ready message@Ready message*)
+
+DB331.DBX152.2   (N)
+END_STEP
+
+STEP Check_A2_A3_A4 (*$_NUM 25*):
+(*$_COM Check A2/A3/A4@Check A2/A3/A4*)
+
+SUPERVISION
+ CONDITION := S025.U > DB331.DBD220 AND T026.TT AND T033.TT AND T037.TT 
+END_SUPERVISION
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Check_A2_A3_A4_a (*$_NUM 26*):
+(*$_COM Check A2/A3/A4@Step comment*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Unlock_slides_2 (*$_NUM 27*):
+(*$_COM Unlock slides@Unlock slides*)
+
+DB331.DBX155.7   (N)
+DB331.DBX156.1   (N)
+END_STEP
+
+STEP pos_A2 (*$_NUM 28*):
+(*$_COM Fixture M1 and M2 goes to position A2@Fixture M1 and M2 goes to position A2*)
+
+DB331.DBX154.3   (N)
+DB331.DBX154.6   (N)
+END_STEP
+
+STEP Lock_slides2 (*$_NUM 29*):
+(*$_COM Lock slides@Step comment*)
+
+DB331.DBX156.0   (N)
+DB331.DBX156.2   (N)
+END_STEP
+
+STEP Check_type (*$_NUM 30*):
+(*$_COM Check part type @Check part type*)
+
+DB331.DBX157.1   (N)
+END_STEP
+
+STEP Empty_2 (*$_NUM 31*):
+(*$_COM Empty Step@Empty Step*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Unlock_slides_1 (*$_NUM 32*):
+(*$_COM Unlock slides@Unlock slides*)
+
+DB331.DBX155.7   (N)
+DB331.DBX156.1   (N)
+END_STEP
+
+STEP pos_A3 (*$_NUM 33*):
+(*$_COM Fixture M1 and M2 goes to position A3@Fixture M1 and M2 goes to position A3*)
+
+DB331.DBX154.4   (N)
+DB331.DBX154.7   (N)
+END_STEP
+
+STEP Lock_slides1 (*$_NUM 34*):
+(*$_COM Lock slides@Lock slides*)
+
+DB331.DBX156.0   (N)
+DB331.DBX156.2   (N)
+END_STEP
+
+STEP Unlock_slides (*$_NUM 35*):
+(*$_COM Unlock slides@Unlock slides*)
+
+DB331.DBX155.7   (N)
+DB331.DBX156.1   (N)
+END_STEP
+
+STEP Pos_A4 (*$_NUM 36*):
+(*$_COM Fixture M1 and M2 goes to position A4@Fixture M1 and M2 goes to position A4*)
+
+DB331.DBX154.4   (N)
+DB331.DBX155.0   (N)
+END_STEP
+
+STEP Lock_slides (*$_NUM 37*):
+(*$_COM Lock slides@Lock slides*)
+
+DB331.DBX156.0   (N)
+DB331.DBX156.2   (N)
+END_STEP
+
+STEP Check_FM (*$_NUM 21*):
+(*$_COM Check FM@Check FM*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Wait (*$_NUM 22*):
+(*$_COM Wait to transfer@Wait to transfer*)
+
+DB331.DBX156.4   (N)
+END_STEP
+
+STEP Move_out_part (*$_NUM 23*):
+(*$_COM Move out part@Move out part*)
+
+DB331.DBX153.2   (N)
+END_STEP
+
+STEP Empty_d (*$_NUM 24*):
+(*$_COM Empty Step@Empty Step*)
+
+DB331.DBX152.3   (N)
+END_STEP
+
+STEP Wait_1 (*$_NUM 19*):
+(*$_COM Wait to transfer@Wait to transfer*)
+
+DB331.DBX156.4   (N)
+END_STEP
+
+STEP Move_out_part_1 (*$_NUM 20*):
+(*$_COM Move out part@Move out part*)
+
+DB331.DBX153.2   (N)
+END_STEP
+
+TRANSITION Start_Condition (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := ((NOT DB109.DBX130.0 AND ((DB327.DBX154.5 OR (DB1253.DBX164.7 ))AND DB204.DBX132.0 OR (NOT DB1586.DBX149.7 AND DB204.DBX132.0 OR (DB327.DBX154.5 AND DB204.DBX132.1 )))OR (DB109.DBX130.0 AND ((DB320.DBX155.5 OR (M320.0 ))AND ((DB323.DBX155.2 OR (DB202.DBX132.1 ))AND ((DB327.DBX154.5 OR (DB1253.DBX164.7 OR (DB203.DBX132.1 )))AND DB204.DBX132.0 OR (DB327.DBX154.5 AND DB204.DBX132.1 ))))))AND DB332.DBX152.0 AND NOT DB1253.DBX161.3 AND NOT DB1251.DBX161.3 AND NOT DB1253.DBX160.7 )
+END_TRANSITION
+
+TRANSITION GRD (*$_NUM 2*)
+  FROM CheckHomePos
+  TO check
+CONDITION := DB1620.DBX132.1 AND DB1632.DBX132.1 AND DB1668.DBX132.1 
+END_TRANSITION
+
+TRANSITION way_b (*$_NUM 19*)
+  FROM check
+  TO Wait_1
+CONDITION := NOT DB327.DBX154.5 AND DB204.DBX130.2 
+END_TRANSITION
+
+TRANSITION Trans37_1 (*$_NUM 20*)
+  FROM Wait_1
+  TO Move_out_part_1
+CONDITION := DB1722.DBX138.0 AND DB334.DBX157.2 
+END_TRANSITION
+
+TRANSITION Part_moved_out_1 (*$_NUM 21*)
+  FROM Move_out_part_1
+  TO Ready_mess
+CONDITION := NOT DB334.DBX157.2 AND NOT DB1653.DBX139.2 
+END_TRANSITION
+
+TRANSITION way_a (*$_NUM 3*)
+  FROM check
+  TO (Wait_f, Check_FM) :
+CONDITION := DB327.DBX154.5 
+END_TRANSITION
+
+TRANSITION Not_FM (*$_NUM 32*)
+  FROM Check_FM
+  TO Empty_d
+CONDITION := NOT DB204.DBX130.2 
+END_TRANSITION
+
+TRANSITION FM (*$_NUM 22*)
+  FROM Check_FM
+  TO Wait
+CONDITION := DB204.DBX130.2 
+END_TRANSITION
+
+TRANSITION Trans37 (*$_NUM 23*)
+  FROM Wait
+  TO Move_out_part
+CONDITION := DB1722.DBX138.0 AND DB334.DBX157.2 
+END_TRANSITION
+
+TRANSITION Part_moved_out (*$_NUM 24*)
+  FROM Move_out_part
+  TO Empty_d
+CONDITION := NOT DB334.DBX157.2 AND NOT DB1653.DBX139.2 
+END_TRANSITION
+
+TRANSITION SVAE (*$_NUM 4*)
+  FROM Wait_f
+  TO (Transfer_in, Check_A2_A3_A4) :
+CONDITION := NOT I2751.2 
+END_TRANSITION
+
+TRANSITION Trans41 (*$_NUM 25*)
+  FROM Check_A2_A3_A4
+  TO Check_A2_A3_A4_a
+CONDITION := (DB1653.DBX149.7 AND DB1674.DBX149.1 OR (NOT DB1653.DBX149.7 AND (M910.0 OR (M910.1 OR (M910.2 )))))
+END_TRANSITION
+
+TRANSITION A4 (*$_NUM 37*)
+  FROM Check_A2_A3_A4_a
+  TO Unlock_slides
+CONDITION := (DB204.DBX162.6 AND DB1653.DBX149.7 OR (M910.2 AND NOT DB1653.DBX149.7 ))
+END_TRANSITION
+
+TRANSITION GST101_102_QM3_21 (*$_NUM 38*)
+  FROM Unlock_slides
+  TO Pos_A4
+CONDITION := M1756.5 AND M1796.5 
+END_TRANSITION
+
+TRANSITION in_pos_A4 (*$_NUM 39*)
+  FROM Pos_A4
+  TO Lock_slides
+CONDITION := DB1664.DBX132.1 AND DB1665.DBX132.2 
+END_TRANSITION
+
+TRANSITION GST101_102_QM3_11 (*$_NUM 40*)
+  FROM Lock_slides
+  TO Check_type
+CONDITION := M1756.4 AND M1796.4 
+END_TRANSITION
+
+TRANSITION A3 (*$_NUM 33*)
+  FROM Check_A2_A3_A4_a
+  TO Unlock_slides_1
+CONDITION := (DB204.DBX162.5 AND DB1653.DBX149.7 OR (M910.1 AND NOT DB1653.DBX149.7 ))
+END_TRANSITION
+
+TRANSITION GST101_102_QM3_21_1 (*$_NUM 34*)
+  FROM Unlock_slides_1
+  TO pos_A3
+CONDITION := M1756.5 AND M1796.5 
+END_TRANSITION
+
+TRANSITION in_pos_A3 (*$_NUM 35*)
+  FROM pos_A3
+  TO Lock_slides1
+CONDITION := DB1664.DBX132.1 AND DB1665.DBX132.1 
+END_TRANSITION
+
+TRANSITION GST101_102_QM3_11_1 (*$_NUM 36*)
+  FROM Lock_slides1
+  TO Check_type
+CONDITION := M1756.4 AND M1796.4 
+END_TRANSITION
+
+TRANSITION A2 (*$_NUM 26*)
+  FROM Check_A2_A3_A4_a
+  TO Unlock_slides_2
+CONDITION := (DB204.DBX162.4 AND DB1653.DBX149.7 OR (M910.0 AND NOT DB1653.DBX149.7 ))
+END_TRANSITION
+
+TRANSITION GST101_102_QM3_21_2 (*$_NUM 27*)
+  FROM Unlock_slides_2
+  TO pos_A2
+CONDITION := M1756.5 AND M1796.5 
+END_TRANSITION
+
+TRANSITION in_pos_A2 (*$_NUM 28*)
+  FROM pos_A2
+  TO Lock_slides2
+CONDITION := DB1664.DBX132.0 AND DB1665.DBX132.0 
+END_TRANSITION
+
+TRANSITION GST101_102_QM3_11_2 (*$_NUM 29*)
+  FROM Lock_slides2
+  TO Check_type
+CONDITION := M1756.4 AND M1796.4 
+END_TRANSITION
+
+TRANSITION type_not_ok (*$_NUM 41*)
+  FROM Check_type
+  TO Check_A2_A3_A4 (*$_JUMP*)
+CONDITION := (((NOT DB1664.DBX132.0 OR (NOT DB1665.DBX132.0 ))AND DB204.DBX162.4 OR ((NOT DB1664.DBX132.1 OR (NOT DB1665.DBX132.1 ))AND DB204.DBX162.5 OR ((NOT DB1664.DBX132.1 OR (NOT DB1665.DBX132.2 ))AND DB204.DBX162.6 )))AND NOT DB327.DBX153.2 AND DB1653.DBX149.7 )
+END_TRANSITION
+
+TRANSITION type_ok (*$_NUM 30*)
+  FROM Check_type
+  TO Empty_2
+CONDITION := ((DB204.DBX162.4 AND DB1664.DBX132.0 AND DB1665.DBX132.0 OR (DB204.DBX162.5 AND DB1664.DBX132.1 AND DB1665.DBX132.1 OR (DB204.DBX162.6 AND DB1664.DBX132.1 AND DB1665.DBX132.2 )))AND NOT DB327.DBX153.2 AND DB1653.DBX149.7 )
+END_TRANSITION
+
+TRANSITION Transfer_in_a (*$_NUM 5*)
+  FROM Transfer_in
+  TO Read_Data_from_RFID
+CONDITION := I2751.0 AND I2751.1 AND DB1653.DBX149.7 
+END_TRANSITION
+
+TRANSITION Data_ok (*$_NUM 6*)
+  FROM Read_Data_from_RFID
+  TO TLG_NFM
+CONDITION := DB1674.DBX149.1 
+END_TRANSITION
+
+TRANSITION Sended_a (*$_NUM 7*)
+  FROM TLG_NFM
+  TO Empty_1
+CONDITION := (DB331.DBX155.3 AND NOT DB1253.DBX160.6 OR (DB1253.DBX160.6 ))
+END_TRANSITION
+
+TRANSITION Eins (*$_NUM 8*)
+  FROM ( Empty_1, Empty_2) 
+  TO Check_Scrap
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Scrap_on (*$_NUM 31*)
+  FROM Check_Scrap
+  TO Wait_process_FM (*$_JUMP*)
+CONDITION := DB204.DBX132.3 
+END_TRANSITION
+
+TRANSITION Scrap_off (*$_NUM 9*)
+  FROM Check_Scrap
+  TO Start_080XSK004
+CONDITION := NOT DB204.DBX132.3 
+END_TRANSITION
+
+TRANSITION started_080XSK004 (*$_NUM 10*)
+  FROM Start_080XSK004
+  TO Wait_release
+CONDITION := NOT DB332.DBX152.0 
+END_TRANSITION
+
+TRANSITION wait_rel (*$_NUM 11*)
+  FROM Wait_release
+  TO Move_down
+CONDITION := DB332.DBX164.5 
+END_TRANSITION
+
+TRANSITION Elevator_down (*$_NUM 12*)
+  FROM Move_down
+  TO Release1_080XSK004
+CONDITION := DB1658.DBX133.2 
+END_TRANSITION
+
+TRANSITION True_c (*$_NUM 13*)
+  FROM Release1_080XSK004
+  TO Wait_release_hts
+CONDITION := NOT DB332.DBX164.5 
+END_TRANSITION
+
+TRANSITION wait_rel_hts (*$_NUM 14*)
+  FROM Wait_release_hts
+  TO Move_up
+CONDITION := DB332.DBX164.6 
+END_TRANSITION
+
+TRANSITION Elevator_up (*$_NUM 15*)
+  FROM Move_up
+  TO Wait_process_FM
+CONDITION := DB1658.DBX133.1 
+END_TRANSITION
+
+TRANSITION wait_process (*$_NUM 16*)
+  FROM Wait_process_FM
+  TO Empty_c
+CONDITION := DB332.DBX152.0 AND M1253.2 
+END_TRANSITION
+
+TRANSITION Eins_b (*$_NUM 17*)
+  FROM ( Empty_c, Empty_d) 
+  TO Ready_mess
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Ready_message (*$_NUM 18*)
+  FROM Ready_mess
+  TO INI (*$_JUMP*)
+CONDITION := DB331.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK FB432
+(*$_COM 080VR_101/080GST101/102 Sequence
+->Initial Step->Check home position->Check Stop before process selected->Release 080HTS001 Down->080GST102_QM2  forward,if TYPE_T5,080GST102_QM13QM14forward->080GST101 - Production Loads Parts,080GST102 - Production Loads Parts->080GST101_QM6 QM7 forward,080GST101_QM4 QM5 forward,080GST102_QM7 QM8 forward,080GST102_QM4 QM5 forward,080GST102_QM9 QM16 forward,080GST102_QM3 type variant OPEN
+->Production enters to weld - 080GST101,Production enters to weld - 080GST102->Finish welding,open all clamps
+
+
+
+
+
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial Step*)
+
+DB332.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check home position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB332.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB332.DBX152.1   (N)
+END_STEP
+
+STEP Stop_Befor_Process (*$_NUM 3*):
+(*$_COM Check Stop before process selected@Check Stop after process selected*)
+
+DB332.DBX152.4   (N)
+END_STEP
+
+STEP Release_080HTS001_Down (*$_NUM 4*):
+(*$_COM Release 1 080XSK003@Release 1 080XSK003*)
+
+DB332.DBX164.5   (N)
+END_STEP
+
+STEP Check_Part_a (*$_NUM 5*):
+(*$_COM Check part control@Check part control*)
+
+SUPERVISION
+ CONDITION := S005.U > DB332.DBD220 AND NOT T005.TT 
+END_SUPERVISION
+DB332.DBX153.1   (N)
+END_STEP
+
+STEP CLose_VR_101_QM2_a (*$_NUM 6*):
+(*$_COM 080VR_101_QM2 forward@080VR_101_QM2 forward*)
+
+DB332.DBX154.2   (N)
+END_STEP
+
+STEP Empty_1 (*$_NUM 7*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP GST101_REL_LOAD_PART (*$_NUM 8*):
+(*$_COM 080GST101 - Production Loads Parts@Check part control an 080GST101_QM6/7 fw*)
+
+DB332.DBX164.7   (N)
+END_STEP
+
+STEP Left_Side_Safety_Reset_a (*$_NUM 9*):
+(*$_COM Safety Area Reset@Wait reset Safety Area*)
+
+DB332.DBX164.7   (N)
+END_STEP
+
+STEP Check_Part_080GST101_a (*$_NUM 10*):
+(*$_COM 080GST101 - Check Part Control@080GST101 - Check Part Control*)
+
+DB332.DBX163.1   (N)
+DB332.DBX164.7   (N)
+END_STEP
+
+STEP Empty_4 (*$_NUM 11*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP CLose_GST101_QM6_7_a (*$_NUM 12*):
+(*$_COM 080GST101_QM6 QM7 forward@080GST101_QM8 forward*)
+
+DB332.DBX155.6   (N)
+DB332.DBX156.0   (N)
+END_STEP
+
+STEP CLose_GST101_QM4_5_a (*$_NUM 13*):
+(*$_COM 080GST101_QM4 QM5 forward@080GST101_QM4/5 forward*)
+
+DB332.DBX155.2   (N)
+DB332.DBX155.4   (N)
+END_STEP
+
+STEP Empty_6 (*$_NUM 14*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP WAIT_WORKER_IN_a (*$_NUM 15*):
+(*$_COM Production enters to weld - 080GST101@Production enters to weld - 080GST101*)
+
+SUPERVISION
+ CONDITION := S015.U > DB332.DBD220 AND NOT T015.TT 
+END_SUPERVISION
+DB332.DBX164.7   (N)
+END_STEP
+
+STEP Left_Side_Safety_Reset_b (*$_NUM 16*):
+(*$_COM Wait reset Safety Area@Wait reset Safety Area*)
+
+DB332.DBX164.7   (N)
+END_STEP
+
+STEP Empty_8 (*$_NUM 17*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP FM1 (*$_NUM 18*):
+(*$_COM FM1@Step comment*)
+
+DB332.DBX160.0   (N)
+END_STEP
+
+STEP OPEN_VR_101_QM2_a (*$_NUM 19*):
+(*$_COM 080VR_101_QM2 backward@080VR_101_QM2 backward*)
+
+DB332.DBX154.3   (N)
+END_STEP
+
+STEP Empty_10 (*$_NUM 20*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP Check_PART_GST (*$_NUM 21*):
+(*$_COM Check 080GST101/102 part control@Check 080GST part control*)
+
+SUPERVISION
+ CONDITION := S021.U > DB332.DBD220 AND NOT T021.TT 
+END_SUPERVISION
+DB332.DBX153.0   (N)
+END_STEP
+
+STEP Stop_After_Process (*$_NUM 22*):
+(*$_COM Check Stop after process selected@Check Stop after process selected*)
+
+DB332.DBX152.5   (N)
+END_STEP
+
+STEP Release_080XSK003 (*$_NUM 23*):
+(*$_COM Release 2 080XSK003@Release 2 080XSK003*)
+
+DB332.DBX164.6   (N)
+END_STEP
+
+STEP Check_Part_080VR_101 (*$_NUM 24*):
+(*$_COM Check part control@Check part control*)
+
+SUPERVISION
+ CONDITION := S024.U > DB332.DBD220 AND NOT T024.TT 
+END_SUPERVISION
+DB332.DBX153.0   (N)
+END_STEP
+
+STEP Ready_mess (*$_NUM 25*):
+(*$_COM Ready message@Ready message*)
+
+DB332.DBX152.2   (N)
+END_STEP
+
+STEP OPEN_GST101_QM4_7_a (*$_NUM 40*):
+(*$_COM 080GST101_QM4 QM5 QM6 QM7 backward@080GST101_QM4-8 backward*)
+
+DB332.DBX155.3   (N)
+DB332.DBX155.5   (N)
+DB332.DBX155.7   (N)
+DB332.DBX156.1   (N)
+END_STEP
+
+STEP OPEN_GST101_QM2_a (*$_NUM 41*):
+(*$_COM 080GST101_QM2 backward@080GST101_QM2 backward*)
+
+DB332.DBX154.7   (N)
+END_STEP
+
+STEP Empty_11 (*$_NUM 42*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP OPEN_GST102_QM4_8_a (*$_NUM 43*):
+(*$_COM 080GST102_QM4 QM5 QM7 QM8 backward@080GST102_QM4/5/7/8/9/11 backward*)
+
+DB332.DBX157.1   (N)
+DB332.DBX157.3   (N)
+DB332.DBX157.7   (N)
+DB332.DBX158.1   (N)
+END_STEP
+
+STEP OPEN_GST102_QM2_a (*$_NUM 44*):
+(*$_COM 080GST102_QM2 backward@080GST102_QM2/13/14 backward*)
+
+DB332.DBX156.5   (N)
+END_STEP
+
+STEP Empty_12 (*$_NUM 45*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP WAIT_WORKER_IN_b (*$_NUM 37*):
+(*$_COM Production enters to weld - 080GST102@Production enters to weld - 080GST102*)
+
+SUPERVISION
+ CONDITION := S037.U > DB332.DBD220 AND NOT T033.TT 
+END_SUPERVISION
+DB332.DBX165.0   (N)
+END_STEP
+
+STEP Righ_Side_Safety_Reset_b (*$_NUM 38*):
+(*$_COM Wait reset Safety Area@Wait reset Safety Area*)
+
+DB332.DBX165.0   (N)
+END_STEP
+
+STEP Empty_9 (*$_NUM 39*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP CLose_GST102_QM7_8_a (*$_NUM 34*):
+(*$_COM 080GST102_QM7 QM8 forward@080GST102_QM11 forward*)
+
+DB332.DBX157.6   (N)
+DB332.DBX158.0   (N)
+END_STEP
+
+STEP CLose_GST102_QM4_5_a (*$_NUM 35*):
+(*$_COM 080GST102_QM4 QM5 type variant forward@080GST102_QM4/5/14 type variant forward*)
+
+SUPERVISION
+ CONDITION := S028.U > DB332.DBD220 AND NOT T027.TT AND NOT T041.TT 
+END_SUPERVISION
+DB332.DBX157.0   (N)
+DB332.DBX157.2   (N)
+END_STEP
+
+STEP Empty_7 (*$_NUM 36*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP CLose_GST102_QM9_16_a (*$_NUM 47*):
+(*$_COM 080GST102_@080GST102_QM9 QM16 type variant forward*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP GST102_REL_LOAD_PART (*$_NUM 30*):
+(*$_COM 080GST102 - Production Loads Parts@Check part control an 080GST102_QM7/8/9 fw*)
+
+DB332.DBX165.0   (N)
+END_STEP
+
+STEP Righ_Side_Safety_Reset_a (*$_NUM 31*):
+(*$_COM Safety Area Reset@Wait reset Safety Area*)
+
+DB332.DBX165.0   (N)
+END_STEP
+
+STEP Check_Part_080GST102_a (*$_NUM 32*):
+(*$_COM 080GST102 - Check Part Control@080GST102 - Check Part Control*)
+
+DB332.DBX163.2   (N)
+DB332.DBX165.0   (N)
+END_STEP
+
+STEP Empty_5 (*$_NUM 33*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP CLose_GST101_QM2_a (*$_NUM 26*):
+(*$_COM 080GST101_QM2 forward@080GST101_QM2 forward*)
+
+DB332.DBX154.6   (N)
+END_STEP
+
+STEP Empty_2 (*$_NUM 27*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP CLose_GST102_QM2_a (*$_NUM 28*):
+(*$_COM 080GST102_QM2 type variant forward@080GST102_QM2/13 type variant forward*)
+
+SUPERVISION
+ CONDITION := S028.U > DB332.DBD220 AND NOT T027.TT AND NOT T039.TT 
+END_SUPERVISION
+DB332.DBX156.4   (N)
+END_STEP
+
+STEP Empty_3 (*$_NUM 29*):
+(*$_COM Empty Step@Empty Step*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+STEP CLose_GST102_QM13_14_a (*$_NUM 46*):
+(*$_COM 080GST102@080GST102_QM15 type variant forward*)
+
+DB332.DBX152.3   (N)
+END_STEP
+
+TRANSITION Start_Condition (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := DB331.DBX153.6 
+END_TRANSITION
+
+TRANSITION Home_Pos_Ok (*$_NUM 2*)
+  FROM CheckHomePos
+  TO Stop_Befor_Process
+CONDITION := DB1668.DBX132.1 AND DB1620.DBX132.1 AND DB1632.DBX132.1 
+END_TRANSITION
+
+TRANSITION Check_HVP (*$_NUM 3*)
+  FROM Stop_Befor_Process
+  TO Release_080HTS001_Down
+CONDITION := NOT DB204.DBX130.0 
+END_TRANSITION
+
+TRANSITION Rel_080HTS001_Down (*$_NUM 4*)
+  FROM Release_080HTS001_Down
+  TO Check_Part_a
+CONDITION := DB331.DBX153.7 
+END_TRANSITION
+
+TRANSITION Part_Occupied (*$_NUM 5*)
+  FROM Check_Part_a
+  TO (CLose_VR_101_QM2_a, CLose_GST101_QM2_a, CLose_GST102_QM2_a) :
+CONDITION := DB1668.DBX132.6 
+END_TRANSITION
+
+TRANSITION TYPE_T5 (*$_NUM 39*)
+  FROM CLose_GST102_QM2_a
+  TO CLose_GST102_QM13_14_a
+CONDITION := M1796.2 AND DB204.DBX162.3 
+END_TRANSITION
+
+TRANSITION GST102_QM13_14_BG11_a (*$_NUM 40*)
+  FROM CLose_GST102_QM13_14_a
+  TO Empty_3
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION CLose_GST102_QM2_BG11_a (*$_NUM 27*)
+  FROM CLose_GST102_QM2_a
+  TO Empty_3
+CONDITION := M1796.2 AND NOT DB204.DBX162.3 
+END_TRANSITION
+
+TRANSITION CLose_GST101_QM2_BG11_a (*$_NUM 26*)
+  FROM CLose_GST101_QM2_a
+  TO Empty_2
+CONDITION := M1756.2 
+END_TRANSITION
+
+TRANSITION CLose_VR_101_QM2_BG11_a (*$_NUM 6*)
+  FROM CLose_VR_101_QM2_a
+  TO Empty_1
+CONDITION := M1836.2 
+END_TRANSITION
+
+TRANSITION LOGIC1_a (*$_NUM 7*)
+  FROM ( Empty_1, Empty_2, Empty_3) 
+  TO (GST101_REL_LOAD_PART, GST102_REL_LOAD_PART) :
+CONDITION := NOT M500.2 
+END_TRANSITION
+
+TRANSITION Load_Part_080GST102 (*$_NUM 28*)
+  FROM GST102_REL_LOAD_PART
+  TO Righ_Side_Safety_Reset_a
+CONDITION := M1816.0 AND M1816.2 AND NOT DB2505.DBX14.6 
+END_TRANSITION
+
+TRANSITION Reset_Safety_right_a (*$_NUM 29*)
+  FROM Righ_Side_Safety_Reset_a
+  TO Check_Part_080GST102_a
+CONDITION := DB2505.DBX14.6 
+END_TRANSITION
+
+TRANSITION PART_CH_080GST102_a (*$_NUM 30*)
+  FROM Check_Part_080GST102_a
+  TO Empty_5
+CONDITION := DB1620.DBX133.5 AND DB1632.DBX133.7 AND DB2505.DBX14.6 AND I6751.3 
+END_TRANSITION
+
+TRANSITION Load_Part_080GST101 (*$_NUM 8*)
+  FROM GST101_REL_LOAD_PART
+  TO Left_Side_Safety_Reset_a
+CONDITION := M1776.0 AND M1776.2 AND NOT DB2505.DBX14.6 
+END_TRANSITION
+
+TRANSITION Reset_Safety_left_a (*$_NUM 9*)
+  FROM Left_Side_Safety_Reset_a
+  TO Check_Part_080GST101_a
+CONDITION := DB2505.DBX14.6 
+END_TRANSITION
+
+TRANSITION PART_CH_080GST101_a (*$_NUM 10*)
+  FROM Check_Part_080GST101_a
+  TO Empty_4
+CONDITION := DB1620.DBX133.5 AND DB1632.DBX133.7 AND DB2505.DBX14.6 AND I6751.3 
+END_TRANSITION
+
+TRANSITION LOGIC1_b (*$_NUM 11*)
+  FROM ( Empty_4, Empty_5) 
+  TO (CLose_GST101_QM6_7_a, CLose_GST102_QM7_8_a) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION GST102_QM7_8_BG11_a (*$_NUM 31*)
+  FROM CLose_GST102_QM7_8_a
+  TO CLose_GST102_QM4_5_a
+CONDITION := M1816.0 AND M1816.2 
+END_TRANSITION
+
+TRANSITION GST102_QM4_5_BG11_b_T5 (*$_NUM 41*)
+  FROM CLose_GST102_QM4_5_a
+  TO CLose_GST102_QM9_16_a
+CONDITION := M1796.6 AND M1797.0 AND DB204.DBX162.3 
+END_TRANSITION
+
+TRANSITION GST102_QM9_16_BG11_a (*$_NUM 42*)
+  FROM CLose_GST102_QM9_16_a
+  TO Empty_7
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION GST102_QM4_5_BG11_a (*$_NUM 32*)
+  FROM CLose_GST102_QM4_5_a
+  TO Empty_7
+CONDITION := M1796.6 AND M1797.0 AND NOT DB204.DBX162.3 
+END_TRANSITION
+
+TRANSITION GST101_QM6_7_BG11_a (*$_NUM 12*)
+  FROM CLose_GST101_QM6_7_a
+  TO CLose_GST101_QM4_5_a
+CONDITION := M1776.0 AND M1776.2 
+END_TRANSITION
+
+TRANSITION GST101_QM4_5_BG11_a (*$_NUM 13*)
+  FROM CLose_GST101_QM4_5_a
+  TO Empty_6
+CONDITION := M1756.6 AND M1757.0 
+END_TRANSITION
+
+TRANSITION LOGIC1_c (*$_NUM 14*)
+  FROM ( Empty_6, Empty_7) 
+  TO (WAIT_WORKER_IN_a, WAIT_WORKER_IN_b) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION WORKER_IN_b (*$_NUM 33*)
+  FROM WAIT_WORKER_IN_b
+  TO Righ_Side_Safety_Reset_b
+CONDITION := NOT DB2505.DBX14.6 
+END_TRANSITION
+
+TRANSITION Reset_Safety_right_b (*$_NUM 34*)
+  FROM Righ_Side_Safety_Reset_b
+  TO Empty_9
+CONDITION := DB2505.DBX14.6 AND I6751.3 
+END_TRANSITION
+
+TRANSITION WORKER_IN_a (*$_NUM 15*)
+  FROM WAIT_WORKER_IN_a
+  TO Left_Side_Safety_Reset_b
+CONDITION := NOT DB2505.DBX14.6 
+END_TRANSITION
+
+TRANSITION Reset_Safety_left_b (*$_NUM 16*)
+  FROM Left_Side_Safety_Reset_b
+  TO Empty_8
+CONDITION := DB2505.DBX14.6 AND I6751.3 
+END_TRANSITION
+
+TRANSITION LOGIC1_d (*$_NUM 17*)
+  FROM ( Empty_8, Empty_9) 
+  TO FM1
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION FM1_done (*$_NUM 18*)
+  FROM FM1
+  TO (OPEN_VR_101_QM2_a, OPEN_GST101_QM4_7_a, OPEN_GST102_QM4_8_a) :
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION OPEN_GST102_QM4_8_BG21_a (*$_NUM 37*)
+  FROM OPEN_GST102_QM4_8_a
+  TO OPEN_GST102_QM2_a
+CONDITION := M1796.7 AND M1797.1 AND M1816.1 AND M1816.3 AND NOT DB1632.DBX132.7 AND NOT DB1632.DBX133.0 
+END_TRANSITION
+
+TRANSITION OPEN_GST102_QM2_BG21_a (*$_NUM 38*)
+  FROM OPEN_GST102_QM2_a
+  TO Empty_12
+CONDITION := M1796.3 
+END_TRANSITION
+
+TRANSITION OPEN_GST101_QM4_7_BG21_a (*$_NUM 35*)
+  FROM OPEN_GST101_QM4_7_a
+  TO OPEN_GST101_QM2_a
+CONDITION := M1756.7 AND M1757.1 AND M1776.1 AND M1776.3 AND NOT DB1620.DBX132.7 AND NOT DB1620.DBX133.0 
+END_TRANSITION
+
+TRANSITION OPEN_GST101_QM2_BG21_a (*$_NUM 36*)
+  FROM OPEN_GST101_QM2_a
+  TO Empty_11
+CONDITION := M1756.3 
+END_TRANSITION
+
+TRANSITION CLose_VR_101_QM2_BG21_a (*$_NUM 19*)
+  FROM OPEN_VR_101_QM2_a
+  TO Empty_10
+CONDITION := M1836.3 
+END_TRANSITION
+
+TRANSITION LOGIC1_e (*$_NUM 20*)
+  FROM ( Empty_10, Empty_11, Empty_12) 
+  TO Check_PART_GST
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION PART_FREE_GST (*$_NUM 21*)
+  FROM Check_PART_GST
+  TO Stop_After_Process
+CONDITION := DB1620.DBX133.4 AND DB1632.DBX133.6 
+END_TRANSITION
+
+TRANSITION Check_HNP (*$_NUM 22*)
+  FROM Stop_After_Process
+  TO Release_080XSK003
+CONDITION := NOT DB204.DBX130.1 
+END_TRANSITION
+
+TRANSITION Rel_080XSK003 (*$_NUM 23*)
+  FROM Release_080XSK003
+  TO Check_Part_080VR_101
+CONDITION := DB331.DBX154.0 
+END_TRANSITION
+
+TRANSITION Part_Free_080VR_101 (*$_NUM 24*)
+  FROM Check_Part_080VR_101
+  TO Ready_mess
+CONDITION := DB1668.DBX132.0 
+END_TRANSITION
+
+TRANSITION Ready_Msg (*$_NUM 25*)
+  FROM Ready_mess
+  TO INI (*$_JUMP*)
+CONDITION := DB332.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK FB434
+(*$_COM Station 090QF_001 Sequence
+->Initial step->Check home position
+1.From 080HTR001 TO 090HTR001
+->090TRR001 move up and Stopper down->Wait for 090HTR001-BG11:4->090TRR001 move down and stopper up
+2.From 090HTM001 to 090HTM002->From 090HTM002 to 090HTM003->From 090HTM003 to 090HTM004
+3.From 090HTR002 TO 090HTR003
+
+
+
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial step*)
+
+DB334.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check 090HTM home positions@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB334.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB334.DBX152.1   (N)
+END_STEP
+
+STEP Wait_f (*$_NUM 3*):
+(*$_COM Wait for new skid@Wait for new skid*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Move_up_090TRR001 (*$_NUM 4*):
+(*$_COM 090TRR001 move up and Stopper down@TRR move up and ST unlocked*)
+
+DB334.DBX155.5   (N)
+DB334.DBX155.2   (N)
+END_STEP
+
+STEP Wait_090HTR001_BG11 (*$_NUM 5*):
+(*$_COM Wait for 090HTR001-BG11:4@Wait for HTR-BG11:4*)
+
+DB334.DBX157.2   (N)
+END_STEP
+
+STEP Move_down_090TRR001 (*$_NUM 6*):
+(*$_COM 090TRR001 move down and stopper up@TRR move down and ST locked*)
+
+DB334.DBX155.4   (N)
+DB334.DBX155.3   (N)
+END_STEP
+
+STEP Empty_step_a_1 (*$_NUM 7*):
+(*$_COM Empty Step@Empty Step*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Ready (*$_NUM 8*):
+(*$_COM Ready Message@Ready Message*)
+
+DB334.DBX152.2   (N)
+END_STEP
+
+STEP Check_HTM_Pos (*$_NUM 9*):
+(*$_COM Check HTM Positioning@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Check_090HTM001_POS (*$_NUM 10*):
+(*$_COM Check if 090HTM001 should lower@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Lower_090HTM001 (*$_NUM 11*):
+(*$_COM Move HTM 1 Down@Step comment*)
+
+DB334.DBX153.3   (N)
+END_STEP
+
+STEP Empty_Step (*$_NUM 12*):
+(*$_COM Empty Step@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Step54 (*$_NUM 13*):
+(*$_COM Check 090QF001 position@Step comment*)
+
+SUPERVISION
+ CONDITION := S013.U > DB334.DBD220 AND NOT T013.TT AND NOT T026.TT AND NOT T028.TT AND NOT T030.TT 
+END_SUPERVISION
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Step55 (*$_NUM 14*):
+(*$_COM Move QF forward to place 2@Step comment*)
+
+DB334.DBX156.0   (N)
+END_STEP
+
+STEP Move_all_HTM_up_1 (*$_NUM 15*):
+(*$_COM Move all HTM up@Move all HTM up*)
+
+DB334.DBX153.2   (N)
+DB334.DBX153.4   (N)
+DB334.DBX153.6   (N)
+DB334.DBX154.0   (N)
+END_STEP
+
+STEP Step52 (*$_NUM 16*):
+(*$_COM Empty Step@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Step56 (*$_NUM 29*):
+(*$_COM Move QF forward to place 3@Step comment*)
+
+DB334.DBX156.1   (N)
+END_STEP
+
+STEP Step57 (*$_NUM 30*):
+(*$_COM Move QF forward to place 4@Step comment*)
+
+DB334.DBX156.2   (N)
+END_STEP
+
+STEP Check_090HTM002_POS (*$_NUM 20*):
+(*$_COM Check if 090HTM002 should lower@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Lower_090HTM002 (*$_NUM 21*):
+(*$_COM Move HTM 2 Down@Step comment*)
+
+DB334.DBX153.5   (N)
+END_STEP
+
+STEP Empty_Step1 (*$_NUM 22*):
+(*$_COM Empty Step@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Check_090HTM003_POS (*$_NUM 23*):
+(*$_COM Check if 090HTM003 should lower@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Lower_090HTM003 (*$_NUM 24*):
+(*$_COM Move HTM 3 Down@Step comment*)
+
+DB334.DBX153.7   (N)
+END_STEP
+
+STEP Empty_Step2 (*$_NUM 25*):
+(*$_COM Empty Step@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Check_090HTM004_POS (*$_NUM 26*):
+(*$_COM Check if 090HTM004 should lower@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Lower_090HTM004 (*$_NUM 27*):
+(*$_COM Move HTM 4 Down@Step comment*)
+
+DB334.DBX154.1   (N)
+END_STEP
+
+STEP Empty_Step3 (*$_NUM 28*):
+(*$_COM Empty Step@Step comment*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Check_090HTR002 (*$_NUM 17*):
+(*$_COM Check 090HTR002 State@Check FM*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+STEP Move_out_part (*$_NUM 18*):
+(*$_COM Move out part to 090HTR003@Move out part*)
+
+DB334.DBX154.3   (N)
+END_STEP
+
+STEP Empty_step_a_3 (*$_NUM 19*):
+(*$_COM Empty Step@Empty Step*)
+
+DB334.DBX152.3   (N)
+END_STEP
+
+TRANSITION Init (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := ((DB331.DBX156.4 AND NOT I2471.2 AND NOT I2471.0 AND DB1687.DBX148.7 OR (DB1687.DBX130.0 AND NOT I807.3 AND NOT I808.3 AND NOT DB1692.DBX130.0 OR (DB1692.DBX130.0 AND NOT I808.2 AND I808.3 AND NOT DB1697.DBX130.0 OR (DB1697.DBX130.0 AND NOT I2431.0 AND NOT I2431.2 AND NOT DB1702.DBX130.0 AND NOT DB1727.DBX149.7 AND NOT DB1727.DBX139.2 OR (DB1727.DBX149.7 AND DB1702.DBX148.7 AND DB1707.DBX148.7 AND NOT I2231.2 )))))AND NOT DB1254.DBX160.7 AND NOT DB1254.DBX161.3 AND NOT DB1251.DBX161.3 )
+END_TRANSITION
+
+TRANSITION Home_position_ok (*$_NUM 2*)
+  FROM CheckHomePos
+  TO (Wait_f, Check_HTM_Pos, Check_090HTR002) :
+CONDITION := I2631.0 AND I2591.0 AND I2551.0 AND I2511.0 
+END_TRANSITION
+
+TRANSITION empty_090HTR002 (*$_NUM 31*)
+  FROM Check_090HTR002
+  TO Empty_step_a_3
+CONDITION := (NOT DB1732.DBX138.0 OR (NOT DB1727.DBX149.7 ))
+END_TRANSITION
+
+TRANSITION full_090HTR002 (*$_NUM 16*)
+  FROM Check_090HTR002
+  TO Move_out_part
+CONDITION := DB1702.DBX148.7 AND DB1707.DBX148.7 AND DB1727.DBX149.7 AND DB1732.DBX138.0 AND NOT I2231.2 
+END_TRANSITION
+
+TRANSITION Part_moved_out (*$_NUM 17*)
+  FROM Move_out_part
+  TO Empty_step_a_3
+CONDITION := DB1732.DBX149.7 AND NOT DB1727.DBX149.7 AND NOT DB1727.DBX139.2 
+END_TRANSITION
+
+TRANSITION Eins (*$_NUM 9*)
+  FROM Check_HTM_Pos
+  TO (Check_090HTM001_POS, Check_090HTM002_POS, Check_090HTM003_POS, Check_090HTM004_POS) :
+CONDITION := NOT DB1727.DBX139.2 AND NOT DB1722.DBX138.2 
+END_TRANSITION
+
+TRANSITION No_Move_HTM_4 (*$_NUM 34*)
+  FROM Check_090HTM004_POS
+  TO Empty_Step3
+CONDITION := (DB1702.DBX130.0 OR (NOT DB1687.DBX130.0 AND NOT DB1692.DBX130.0 AND NOT DB1697.DBX130.0 AND NOT DB1702.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION Move_HTM_4_Down (*$_NUM 23*)
+  FROM Check_090HTM004_POS
+  TO Lower_090HTM004
+CONDITION := ((DB1687.DBX130.0 OR (DB1692.DBX130.0 OR (DB1697.DBX130.0 )))AND NOT DB1702.DBX130.0 )
+END_TRANSITION
+
+TRANSITION HMT_4_Lowered (*$_NUM 24*)
+  FROM Lower_090HTM004
+  TO Empty_Step3
+CONDITION := DB1702.DBX149.0 
+END_TRANSITION
+
+TRANSITION No_Move_HTM_3 (*$_NUM 33*)
+  FROM Check_090HTM003_POS
+  TO Empty_Step2
+CONDITION := (DB1697.DBX130.0 AND DB1702.DBX130.0 OR (NOT DB1687.DBX130.0 AND NOT DB1692.DBX130.0 AND NOT DB1697.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION Move_HTM_3_Down (*$_NUM 21*)
+  FROM Check_090HTM003_POS
+  TO Lower_090HTM003
+CONDITION := ((DB1687.DBX130.0 AND NOT DB1692.DBX130.0 OR (DB1692.DBX130.0 ))AND NOT DB1697.DBX130.0 OR (DB1697.DBX130.0 AND NOT DB1702.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION HMT_3_Lowered (*$_NUM 22*)
+  FROM Lower_090HTM003
+  TO Empty_Step2
+CONDITION := DB1697.DBX149.0 
+END_TRANSITION
+
+TRANSITION No_Move_HTM_2 (*$_NUM 32*)
+  FROM Check_090HTM002_POS
+  TO Empty_Step1
+CONDITION := (DB1692.DBX130.0 AND DB1697.DBX130.0 OR (NOT DB1687.DBX130.0 AND NOT DB1692.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION Move_HTM_2_Down (*$_NUM 19*)
+  FROM Check_090HTM002_POS
+  TO Lower_090HTM002
+CONDITION := (DB1692.DBX130.0 AND NOT DB1697.DBX130.0 OR (DB1687.DBX130.0 AND NOT DB1692.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION HMT_2_Lowered (*$_NUM 20*)
+  FROM Lower_090HTM002
+  TO Empty_Step1
+CONDITION := DB1692.DBX149.0 
+END_TRANSITION
+
+TRANSITION No_Move_HTM_1 (*$_NUM 25*)
+  FROM Check_090HTM001_POS
+  TO Empty_Step
+CONDITION := (NOT DB1687.DBX130.0 OR (DB1687.DBX130.0 AND DB1692.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION Move_HTM_1_Down (*$_NUM 10*)
+  FROM Check_090HTM001_POS
+  TO Lower_090HTM001
+CONDITION := DB1687.DBX130.0 AND NOT DB1692.DBX130.0 
+END_TRANSITION
+
+TRANSITION HMT_1_Lowered (*$_NUM 11*)
+  FROM Lower_090HTM001
+  TO Empty_Step
+CONDITION := DB1687.DBX149.0 
+END_TRANSITION
+
+TRANSITION Eins_1 (*$_NUM 12*)
+  FROM ( Empty_Step, Empty_Step1, Empty_Step2, Empty_Step3) 
+  TO Step54
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION No_Move (*$_NUM 30*)
+  FROM Step54
+  TO Step52
+CONDITION := (NOT DB1687.DBX130.0 AND NOT DB1692.DBX130.0 AND NOT DB1697.DBX130.0 AND NOT DB1702.DBX130.0 OR (DB1687.DBX130.0 AND DB1692.DBX130.0 AND DB1697.DBX130.0 AND DB1702.DBX130.0 AND DB1707.DBX130.0 OR (DB1732.DBX138.0 AND DB1702.DBX130.0 OR (DB1687.DBX148.7 AND DB1692.DBX148.7 AND DB1697.DBX148.7 AND DB1702.DBX148.7 ))))
+END_TRANSITION
+
+TRANSITION QF_Place_4 (*$_NUM 28*)
+  FROM Step54
+  TO Step57
+CONDITION := ((DB1697.DBX130.0 OR ((DB1692.DBX130.0 OR (DB1687.DBX130.0 AND NOT DB1692.DBX130.0 AND DB1687.DBX149.0 ))AND NOT DB1697.DBX130.0 AND DB1692.DBX149.0 ))AND DB1697.DBX149.0 AND NOT DB1702.DBX130.0 AND NOT I2431.0 AND DB1702.DBX149.0 AND NOT DB1727.DBX139.2 )
+END_TRANSITION
+
+TRANSITION QF_Place_4_Occupied (*$_NUM 29*)
+  FROM Step57
+  TO Move_all_HTM_up_1
+CONDITION := I2431.0 
+END_TRANSITION
+
+TRANSITION QF_Place_3 (*$_NUM 26*)
+  FROM Step54
+  TO Step56
+CONDITION := ((DB1687.DBX130.0 AND NOT DB1692.DBX130.0 AND I808.0 AND I2631.2 OR (DB1692.DBX130.0 AND I808.3 ))AND I2591.2 AND NOT DB1697.DBX130.0 AND DB1702.DBX130.0 AND I2551.2 AND NOT I808.2 AND DB1702.DBX148.7 )
+END_TRANSITION
+
+TRANSITION QF_Place_3_Occupied (*$_NUM 27*)
+  FROM Step56
+  TO Move_all_HTM_up_1
+CONDITION := I808.2 
+END_TRANSITION
+
+TRANSITION QF_Place_2 (*$_NUM 13*)
+  FROM Step54
+  TO Step55
+CONDITION := DB1687.DBX130.0 AND NOT DB1692.DBX130.0 AND DB1697.DBX130.0 AND I808.0 AND NOT I808.3 AND DB1687.DBX149.0 AND DB1692.DBX149.0 AND DB1697.DBX148.7 
+END_TRANSITION
+
+TRANSITION QF_Place_2_Occupied (*$_NUM 14*)
+  FROM Step55
+  TO Move_all_HTM_up_1
+CONDITION := I808.3 
+END_TRANSITION
+
+TRANSITION All_HTM_up (*$_NUM 15*)
+  FROM Move_all_HTM_up_1
+  TO Step52
+CONDITION := DB1687.DBX148.7 AND DB1692.DBX148.7 AND DB1697.DBX148.7 AND DB1702.DBX148.7 
+END_TRANSITION
+
+TRANSITION empty_1 (*$_NUM 18*)
+  FROM Wait_f
+  TO Empty_step_a_1
+CONDITION := ((I2471.2 AND I2471.0 OR (NOT DB331.DBX156.4 ))AND DB1687.DBX148.7 )
+END_TRANSITION
+
+TRANSITION SVAA (*$_NUM 3*)
+  FROM Wait_f
+  TO Move_up_090TRR001
+CONDITION := DB331.DBX156.4 AND NOT I2471.2 AND NOT I2471.0 AND DB1687.DBX148.7 AND NOT DB1254.DBX128.6 
+END_TRANSITION
+
+TRANSITION TRR_up (*$_NUM 4*)
+  FROM Move_up_090TRR001
+  TO Wait_090HTR001_BG11
+CONDITION := DB1772.DBX148.7 AND M6746.2 
+END_TRANSITION
+
+TRANSITION True_BG11 (*$_NUM 5*)
+  FROM Wait_090HTR001_BG11
+  TO Move_down_090TRR001
+CONDITION := DB1722.DBX148.7 AND DB1722.DBX149.7 
+END_TRANSITION
+
+TRANSITION Move_down_090TRR_090ST (*$_NUM 6*)
+  FROM Move_down_090TRR001
+  TO Empty_step_a_1
+CONDITION := DB1772.DBX149.0 AND M6746.3 
+END_TRANSITION
+
+TRANSITION always_true_1 (*$_NUM 7*)
+  FROM ( Empty_step_a_1, Step52, Empty_step_a_3) 
+  TO Ready
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Ready_message (*$_NUM 8*)
+  FROM Ready
+  TO INI (*$_JUMP*)
+CONDITION := DB334.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK FB435
+(*$_COM Station 090QF_001 Sequence
+->Initial step->Check home position
+1.From 090HTR002 TO 090HTR003
+2.From 090HTM005 to 090HTM006->From 090HTM006 to 090HTM007
+3.From 090HTM007 TO 110RF_001
+
+
+
+
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC 
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+VAR_INPUT 
+	Default   : Bool := FALSE;
+END_VAR
+
+
+PERM_CONDITION_AT_BEGIN
+MOP.T_PERM (=) :=M2.1 
+END_PERM_CONDITION
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial step*)
+
+DB335.DBX152.0   (N)
+END_STEP
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check home position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB335.DBD220 AND NOT T002.TT 
+END_SUPERVISION
+DB335.DBX152.1   (N)
+END_STEP
+
+STEP Wait_f (*$_NUM 3*):
+(*$_COM Wait for new skid@Wait for new skid*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Wait_090HTR003_BG11 (*$_NUM 4*):
+(*$_COM Wait for 090HTR003-BG11:4@Wait for HTR-BG11:4*)
+
+DB335.DBX154.0   (N)
+END_STEP
+
+STEP Empty_step_a_1 (*$_NUM 5*):
+(*$_COM Empty Step@Empty Step*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Ready (*$_NUM 6*):
+(*$_COM Ready Message@Ready Message*)
+
+DB335.DBX152.2   (N)
+END_STEP
+
+STEP Check_090HTM00x_Pos (*$_NUM 7*):
+(*$_COM Check 090HTM00x position@Step comment*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Check_090HTM005 (*$_NUM 8*):
+(*$_COM Check if 090HTM005 should lower@Step comment*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Lower_090HTM005 (*$_NUM 9*):
+(*$_COM Move 090HTM005 down@Step comment*)
+
+DB335.DBX153.3   (N)
+END_STEP
+
+STEP Empty_Step (*$_NUM 10*):
+(*$_COM Empty Step@Step comment*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Check_090QF002_Pos (*$_NUM 11*):
+(*$_COM Check 090QF002 position@Step comment*)
+
+SUPERVISION
+ CONDITION := S011.U > DB335.DBD220 AND NOT T011.TT AND NOT T022.TT AND NOT T024.TT 
+END_SUPERVISION
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Move_to_PL2 (*$_NUM 12*):
+(*$_COM Move QF forward to Place 2@Step comment*)
+
+DB335.DBX155.0   (N)
+END_STEP
+
+STEP Raise_All_HTMs (*$_NUM 13*):
+(*$_COM Raise all HTMs@Step comment*)
+
+DB335.DBX153.2   (N)
+DB335.DBX153.4   (N)
+DB335.DBX153.6   (N)
+END_STEP
+
+STEP Empty_Step3 (*$_NUM 14*):
+(*$_COM Empty Step@Step comment*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Move_to_PL3 (*$_NUM 24*):
+(*$_COM Move QF forward to Place 3@Move QF forward +1 place*)
+
+DB335.DBX155.1   (N)
+END_STEP
+
+STEP Check_090HTM006 (*$_NUM 18*):
+(*$_COM Check if 090HTM006 should lower@Step comment*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Lower_090HTM006 (*$_NUM 19*):
+(*$_COM Move 090HTM006 down@Step comment*)
+
+DB335.DBX153.5   (N)
+END_STEP
+
+STEP Empty_Step1 (*$_NUM 20*):
+(*$_COM Empty Step@Step comment*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Check_090HTM007 (*$_NUM 21*):
+(*$_COM Check if 090HTM007 should lower@Step comment*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Lower_090HTM007 (*$_NUM 22*):
+(*$_COM Move 090HTM007 down@Step comment*)
+
+DB335.DBX153.7   (N)
+END_STEP
+
+STEP Empty_Step2 (*$_NUM 23*):
+(*$_COM Empty Step@Step comment*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Check_090HTM007_State (*$_NUM 15*):
+(*$_COM Check 090HTM007 State@Check FM*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+STEP Move_out_part (*$_NUM 16*):
+(*$_COM Move out part to 110RF_001@Move out part*)
+
+DB335.DBX154.1   (N)
+END_STEP
+
+STEP Empty_step_a_3 (*$_NUM 17*):
+(*$_COM Empty Step@Empty Step*)
+
+DB335.DBX152.3   (N)
+END_STEP
+
+TRANSITION Init (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := ((DB334.DBX154.3 AND NOT DB1707.DBX130.0 OR (DB1707.DBX130.0 AND NOT DB1712.DBX130.0 OR (DB1712.DBX130.0 AND NOT DB1717.DBX130.0 OR (DB1717.DBX130.0 AND I4411.0 AND NOT DB1747.DBX149.2 ))))AND NOT DB1254.DBX161.3 AND NOT DB1251.DBX161.3 AND NOT DB1254.DBX160.7 )
+END_TRANSITION
+
+TRANSITION Home_position_ok (*$_NUM 2*)
+  FROM CheckHomePos
+  TO (Wait_f, Check_090HTM00x_Pos, Check_090HTM007_State) :
+CONDITION := I2351.0 AND I2311.0 AND I2271.0 
+END_TRANSITION
+
+TRANSITION empty_090HTM007 (*$_NUM 25*)
+  FROM Check_090HTM007_State
+  TO Empty_step_a_3
+CONDITION := (NOT I4411.0 OR (NOT DB1717.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION full_090HTM007 (*$_NUM 14*)
+  FROM Check_090HTM007_State
+  TO Move_out_part
+CONDITION := DB1717.DBX148.7 AND DB1717.DBX130.0 AND DB1737.DBX149.7 AND I4411.0 
+END_TRANSITION
+
+TRANSITION Part_moved_out (*$_NUM 15*)
+  FROM Move_out_part
+  TO Empty_step_a_3
+CONDITION := NOT DB1737.DBX148.7 AND NOT DB1737.DBX149.7 AND NOT DB1737.DBX139.2 
+END_TRANSITION
+
+TRANSITION Eins (*$_NUM 7*)
+  FROM Check_090HTM00x_Pos
+  TO (Check_090HTM005, Check_090HTM006, Check_090HTM007) :
+CONDITION := NOT DB1737.DBX139.2 AND NOT DB1732.DBX138.2 
+END_TRANSITION
+
+TRANSITION No_Move_HTM_7 (*$_NUM 27*)
+  FROM Check_090HTM007
+  TO Empty_Step2
+CONDITION := DB1717.DBX130.0 
+END_TRANSITION
+
+TRANSITION Move_HTM_7_Down (*$_NUM 19*)
+  FROM Check_090HTM007
+  TO Lower_090HTM007
+CONDITION := ((DB1707.DBX130.0 AND NOT DB1712.DBX130.0 OR (DB1712.DBX130.0 ))AND NOT DB1717.DBX130.0 )
+END_TRANSITION
+
+TRANSITION HTM_7_Lowered (*$_NUM 20*)
+  FROM Lower_090HTM007
+  TO Empty_Step2
+CONDITION := I2271.2 
+END_TRANSITION
+
+TRANSITION No_Move_HTM_6 (*$_NUM 26*)
+  FROM Check_090HTM006
+  TO Empty_Step1
+CONDITION := (NOT DB1707.DBX130.0 AND NOT DB1712.DBX130.0 AND NOT DB1732.DBX139.2 AND NOT DB1697.DBX130.0 AND NOT DB1727.DBX116.4 OR (DB1712.DBX130.0 AND DB1717.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION Move_HTM_6_Down (*$_NUM 17*)
+  FROM Check_090HTM006
+  TO Lower_090HTM006
+CONDITION := (DB1707.DBX130.0 AND NOT DB1712.DBX130.0 OR (DB1712.DBX130.0 AND NOT DB1717.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION HTM_6_Lowered (*$_NUM 18*)
+  FROM Lower_090HTM006
+  TO Empty_Step1
+CONDITION := I2311.2 
+END_TRANSITION
+
+TRANSITION No_Move_HTM_5 (*$_NUM 21*)
+  FROM Check_090HTM005
+  TO Empty_Step
+CONDITION := (NOT DB1707.DBX130.0 AND NOT DB1732.DBX139.2 AND NOT DB1727.DBX116.4 OR (DB1707.DBX130.0 AND DB1712.DBX130.0 ))
+END_TRANSITION
+
+TRANSITION Move_HTM_5_Down (*$_NUM 8*)
+  FROM Check_090HTM005
+  TO Lower_090HTM005
+CONDITION := DB1707.DBX130.0 AND NOT DB1712.DBX130.0 
+END_TRANSITION
+
+TRANSITION HTM_5_Lowered (*$_NUM 9*)
+  FROM Lower_090HTM005
+  TO Empty_Step
+CONDITION := I2351.2 
+END_TRANSITION
+
+TRANSITION Eins1 (*$_NUM 10*)
+  FROM ( Empty_Step, Empty_Step1, Empty_Step2) 
+  TO Check_090QF002_Pos
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION No_Move (*$_NUM 24*)
+  FROM Check_090QF002_Pos
+  TO Raise_All_HTMs
+CONDITION := (NOT DB1707.DBX130.0 AND NOT DB1712.DBX130.0 AND DB1717.DBX130.0 OR (DB1717.DBX130.0 AND I4411.0 OR (DB1707.DBX130.0 AND DB1712.DBX130.0 AND DB1717.DBX130.0 AND NOT I4411.0 OR (NOT DB1707.DBX130.0 AND NOT DB1712.DBX130.0 AND NOT DB1717.DBX130.0 ))))
+END_TRANSITION
+
+TRANSITION Move_QF_PL3 (*$_NUM 22*)
+  FROM Check_090QF002_Pos
+  TO Move_to_PL3
+CONDITION := ((DB1707.DBX130.0 AND NOT DB1712.DBX130.0 AND I2351.2 OR (DB1712.DBX130.0 ))AND NOT DB1717.DBX130.0 AND I2311.2 AND I2271.2 )
+END_TRANSITION
+
+TRANSITION QF_PL3 (*$_NUM 23*)
+  FROM Move_to_PL3
+  TO Raise_All_HTMs
+CONDITION := I2191.0 AND I859.2 
+END_TRANSITION
+
+TRANSITION Move_QF_PL2 (*$_NUM 11*)
+  FROM Check_090QF002_Pos
+  TO Move_to_PL2
+CONDITION := DB1707.DBX130.0 AND NOT DB1712.DBX130.0 AND DB1717.DBX130.0 AND I2351.2 AND I2311.2 AND DB1717.DBX148.7 
+END_TRANSITION
+
+TRANSITION QF_PL2 (*$_NUM 12*)
+  FROM Move_to_PL2
+  TO Raise_All_HTMs
+CONDITION := I857.2 AND I859.3 
+END_TRANSITION
+
+TRANSITION HTMs_Raised (*$_NUM 13*)
+  FROM Raise_All_HTMs
+  TO Empty_Step3
+CONDITION := DB1707.DBX148.7 AND DB1712.DBX148.7 AND DB1717.DBX148.7 
+END_TRANSITION
+
+TRANSITION empty_1 (*$_NUM 16*)
+  FROM Wait_f
+  TO Empty_step_a_1
+CONDITION := NOT DB334.DBX154.3 
+END_TRANSITION
+
+TRANSITION SVAA (*$_NUM 3*)
+  FROM Wait_f
+  TO Wait_090HTR003_BG11
+CONDITION := DB334.DBX154.3 
+END_TRANSITION
+
+TRANSITION True_090HTR003_BG11 (*$_NUM 4*)
+  FROM Wait_090HTR003_BG11
+  TO Empty_step_a_1
+CONDITION := DB1732.DBX148.7 AND DB1732.DBX149.7 
+END_TRANSITION
+
+TRANSITION Eins2 (*$_NUM 5*)
+  FROM ( Empty_step_a_1, Empty_Step3, Empty_step_a_3) 
+  TO Ready
+CONDITION := M2.1 
+END_TRANSITION
+
+TRANSITION Ready_message (*$_NUM 6*)
+  FROM Ready
+  TO INI (*$_JUMP*)
+CONDITION := DB335.DBX152.2 
+END_TRANSITION
+
+END_FUNCTION_BLOCK
+

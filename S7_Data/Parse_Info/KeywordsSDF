@@ -1,0 +1,4 @@
+"Name", "I/O/M  #", "Datatype", "Comments
+
+"050RFB002-M1_ARL_PE0R14 ","I    2068.6 ","BOOL      ","Spare                                                                           "
+"050RFB002-M1_ARL_PE0_MEL","IW   2068   ","WORD      ","Statusword 0 - Messages

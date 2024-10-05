@@ -1,0 +1,62 @@
+FUNCTION_BLOCK FB420
+(*$_COM Comments are here
+*)
+
+(*$_CMPSET
+         S7Graph-Version: 5100
+         WarningLevel: All
+         FBInterface: UserDefined
+         SSBLevel: Individual
+         ASMsgLevel: No
+         TargetMachine: AS300
+         RuntimeBlock: FC
+         CritAvail: F
+         SSkipOn: F
+         AckReq: F
+         SyncAvail: T
+         PermILMan: F
+         SWMLocked: F
+         InitVarStat: 4401
+         SaveSwitching: T
+*)
+
+(*$_SETTINGS
+         ProgLang: LAD
+*)
+
+
+INITIAL_STEP INI (*$_NUM 1*):
+(*$_COM Initial Step@Initial step*)
+
+DB320.DBX152.0   (N)
+END_STEP
+
+
+STEP CheckHomePos (*$_NUM 2*):
+(*$_COM Check home position@Check home position*)
+
+SUPERVISION
+ CONDITION := S002.U > DB320.DBD220 AND NOT T002.TT
+END_SUPERVISION
+DB320.DBX152.1   (N)
+END_STEP
+
+TRANSITION Init (*$_NUM 1*)
+  FROM INI
+  TO CheckHomePos
+CONDITION := ((I4512.3 AND DB1402.DBX148.7 AND DB1518.DBX149.0 AND M595.4 AND ((NOT DB1251.DBX162.5 OR (I4502.6 ))AND ((NOT DB1251.DBX162.7 OR (I4503.0 ))AND NOT DB1251.DBX130.1 ))OR (NOT I4512.3 AND DB1402.DBX148.7 AND I3191.0 AND DB1412.DBX149.7 AND DB1518.DBX149.0 AND DB1407.DBX149.0 AND M595.5 OR (NOT I4512.3 AND DB1407.DBX148.7 AND DB1417.DBX149.7 AND DB323.DBX152.0 AND ((DB203.DBX132.0 OR (DB203.DBX132.1 ))AND (DB204.DBX132.0 AND NOT DB1722.DBX149.7 OR (DB204.DBX132.1 ))))))AND NOT DB1252.DBX161.3 AND NOT DB1251.DBX161.3 AND NOT DB1252.DBX160.7 )
+END_TRANSITION
+
+TRANSITION From_50_TO_60 (*$_NUM 12*)
+  FROM Select_Direction
+  TO Wait_HTR_Ready
+CONDITION := NOT I4512.3 AND DB1407.DBX148.7 AND DB1417.DBX149.7 AND DB323.DBX152.0
+END_TRANSITION
+
+TRANSITION way_a (*$_NUM 5*)
+  FROM Chk_b
+  TO (Ready, Check_FM) :
+CONDITION := DB320.DBX155.5
+END_TRANSITION
+
+END_FUNCTION_BLOCK

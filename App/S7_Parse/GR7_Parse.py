@@ -14,15 +14,7 @@ class GR7_Parse:
         for sequence in self.seq_list:
             sequence['step_data'] = self.parse_steps(sequence['sequence_data'])
             sequence['transition_data'] = self.parse_transitions(sequence['sequence_data'])
-            # sequence['drawio_xml_data'] = self.create_drawio_xml(sequence['step_data'], sequence['transition_data'])
-            # self.graph_diagram(sequence['step_data'], sequence['transition_data'])
-            self.graph_column_layout()
-            pass
 
-        # Generate the XML data and save as draw.io
-        self.drawio_file = '../../Parsed_Data/'  + self.filename[:-4] + 'GR7.drawio'
-        self.active_iofile = open(self.drawio_file, 'wb')
-        self.active_iofile.write(self.drawio_xml_data)
 
     def parse_sequences(self, gr7_data):
         sequences = gr7_data.split('END_FUNCTION_BLOCK')
@@ -225,76 +217,6 @@ class GR7_Parse:
         </mxGraphModel>'''
 
         return xml_template
-
-    def graph_diagram(self, steps, transitions):
-        import networkx as nx
-        import matplotlib.pyplot as plt
-
-        # Create a graph with NetworkX
-        G = nx.Graph()
-
-        # Add nodes
-        G.add_nodes_from(['A', 'B', 'C', 'D', 'E'])
-        # Add edges (connections between nodes)
-        G.add_edges_from([('A', 'B'), ('A', 'C'), ('B', 'D'), ('C', 'D'), ('D', 'E')])
-
-        # Generate a force-directed layout (spring layout)
-        pos = nx.spring_layout(G)
-
-        # Draw the graph
-        nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=3000, font_size=12, font_color='black',
-                edge_color='gray')
-        plt.show()
-        pass
-
-    def graph_column_layout(self):
-        import networkx as nx
-        import matplotlib.pyplot as plt
-        G = nx.DiGraph()
-        G.add_edges_from([
-            ('Root', 'A'),
-            ('Root', 'B'),
-            ('A', 'C'),
-            ('A', 'D'),
-            ('B', 'E'),
-            ('B', 'F'),
-            ('C', 'G'),
-            ('D', 'H'),
-            ('E', 'I'),
-        ])
-        pos = {}  # Dictionary to store positions of nodes
-        layers = {}  # Dictionary to track which layer (column) each node is in
-
-        def assign_layers(node, layer=0):
-            """ Recursively assign nodes to columns (layers) """
-            if node not in layers:
-                layers[node] = layer
-            else:
-                layers[node] = max(layers[node], layer)
-
-            neighbors = list(G.successors(node))
-            if neighbors:
-                for i, neighbor in enumerate(neighbors):
-                    # Assign each child to the next layer
-                    assign_layers(neighbor, layer + 1 + i)
-
-        # Start assigning layers from the root
-        root = [n for n, d in G.in_degree() if d == 0][0]
-        assign_layers(root)
-
-        # Calculate the positions of nodes
-        max_layer = max(layers.values())
-        for node, layer in layers.items():
-            same_layer_nodes = [n for n, l in layers.items() if l == layer]
-            y_pos = same_layer_nodes.index(node)  # Place nodes in different rows in the same column
-            pos[node] = (layer, -y_pos)  # X is the layer (column), Y is the row
-
-        # Draw the graph
-        plt.figure(figsize=(8, 6))
-        nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=3000, font_size=10, font_color='black',
-                edge_color='gray')
-        plt.show()
-        pass
 
 
 if __name__ == "__main__":
