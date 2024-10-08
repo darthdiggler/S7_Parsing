@@ -1,0 +1,7 @@
+/*      This file will contain all of the probe command lines statements that can be executed by
+ *  Siemens Simatic Manager applications. These command were extracted through trial and error.
+/*
+
+
+//This command will open up the Topology stored within the S7 project
+s7ntpsax.exe <Path to .S7 project>
